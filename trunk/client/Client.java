@@ -18,6 +18,7 @@ public class Client {
 	private static DebugFrame debugFrame;
 
 	public static void main (String[] args) {
+                
 		//start the UI
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
