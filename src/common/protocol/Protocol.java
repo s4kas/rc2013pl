@@ -25,6 +25,7 @@ public class Protocol implements Observer {
 		case SCStartMessage:
 			break;
 		case SCUpdateInfo:
+                    //teste
 			break;
 		case CCMessage:
 			break;
