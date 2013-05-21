@@ -6,6 +6,7 @@ package server;
 
 import common.ConnectionHandler;
 import common.protocol.Protocol;
+import common.protocol.CSRegister;
 import common.ui.DebugFrame;
 import server.ui.ServerMainFrame;
 
@@ -49,4 +50,8 @@ public class Server {
 	private static void log(String msg) {
 		debugFrame.log("Server: " + msg);
 	}
+        public static boolean processRegister(CSRegister msg){
+            
+            return true;
+        }
 }
