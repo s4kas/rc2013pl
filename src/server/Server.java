@@ -4,6 +4,8 @@
  */
 package server;
 
+import common.ConnectionHandler;
+import common.protocol.Protocol;
 import common.ui.DebugFrame;
 import server.ui.ServerMainFrame;
 
@@ -15,6 +17,7 @@ public class Server {
 	
 	private static ServerMainFrame mainFrame;
 	private static DebugFrame debugFrame;
+	private static Protocol protocol;
 	
 	public static void main (String[] args) {
 		//start the UI
@@ -30,9 +33,17 @@ public class Server {
 		mainFrame = new ServerMainFrame();
         
         //Create and set up the Debug window.
-        debugFrame = new DebugFrame(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY());
+        //debugFrame = new DebugFrame(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY());
 
         mainFrame.toFront();
+	}
+	
+	public static void startServer() {
+		common.ConnectionHandler conn = new ConnectionHandler(null, 
+				Protocol.SERVER_PORT, true);
+		protocol = new Protocol();
+		conn.addObserver(protocol);
+        new Thread(conn).start();
 	}
 	
 	private static void log(String msg) {

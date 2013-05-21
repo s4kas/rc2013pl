@@ -2,18 +2,20 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package common;
+package common.protocol;
 
 /**
  *
  * @author João
  */
 public class CSRegister extends Message {
-    private Contact user;
+
+	private static final long serialVersionUID = -5785258486527568326L;
+	private Contact user;
     
-    public CSRegister(int norder, Contact c){
-            super(norder);
-            user = c;
+    public CSRegister(Contact c){
+    	super(MessageType.CSRegister);
+    	user = c;
     }
 
     public Contact getUser() {
