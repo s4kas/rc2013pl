@@ -1,6 +1,6 @@
 package client.ui;
 
-import common.ui.ConnectionHandler;
+import client.Client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -16,11 +16,8 @@ public class ClientActionListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(mainFrame.getSignInButton())) {
-                    String username = mainFrame.getSignInUser().getText();
-                    ConnectionHandler conn = new ConnectionHandler("localhost", 666, false);
-                    conn.setObject(username);
-                    new Thread(conn).start();
-                    System.out.println(username);
+			String username = mainFrame.getSignInUser().getText();
+			Client.sendRegister(username);
 		}
 	}
 

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package common.ui;
+package common;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,12 +12,16 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Observable;
+
+import common.protocol.CSRegister;
+
 
 /**
  *
  * @author Emanuel
  */
-public class ConnectionHandler implements Runnable{
+public class ConnectionHandler extends Observable implements Runnable{
     private String host;
     private int port;
     private boolean isServer;
@@ -40,24 +44,37 @@ public class ConnectionHandler implements Runnable{
         } catch (IOException | ClassNotFoundException e) {
             System.out.print(e.getMessage());
         }                    
-    }    
+    }
+    
     public void setObject(Object o){
         this.o = o;
     }
+    
+    public int getPort() {
+    	return this.port;
+    }
+    
     private void startServerSocket() throws UnknownHostException, IOException, ClassNotFoundException{
         // Create server socket.
         ServerSocket serverSocket = new ServerSocket(port);
+        port = serverSocket.getLocalPort();
         while(true){
             // Wait for a client connection.
             Socket connectionSocket = serverSocket.accept();
             InputStream is = connectionSocket.getInputStream();  
-            ObjectInputStream ois = new ObjectInputStream(is);  
-            System.out.println((String)ois.readObject());            
+            ObjectInputStream ois = new ObjectInputStream(is);
+            
+            //notify the protocol
+            setChanged();
+            notifyObservers(ois.readObject());
+            
+            //close this connection
             ois.close();
             is.close();  
             connectionSocket.close();  
         }
     }
+    
     private void startClientSocket() throws UnknownHostException, IOException{
         // Create socket connected to output stream.
         Socket socket = new Socket(host, port);
