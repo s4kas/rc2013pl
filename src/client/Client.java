@@ -5,6 +5,8 @@
 package client;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import common.ConnectionHandler;
 import common.protocol.CSRegister;
@@ -14,6 +16,7 @@ import common.protocol.Protocol;
 import common.ui.DebugFrame;
 
 import client.ui.ClientMainFrame;
+import client.ui.ClientModel;
 
 /**
  *
@@ -21,7 +24,10 @@ import client.ui.ClientMainFrame;
  */
 public class Client {
 	
+	private static final int CLIENT_SERVER_TIMEOUT = 10000;
+	
 	private static ClientMainFrame mainFrame;
+	private static ClientModel clientModel;
 	private static DebugFrame debugFrame;
 	private static Protocol protocol;
 	private static int localPort;
@@ -33,14 +39,16 @@ public class Client {
                 createAndShowUI();
             }
         });
-		
-		//start listening
-		startConnection();
 	}
 	
 	private static void createAndShowUI() {
 		//Create and set up the Main window.
 		mainFrame = new ClientMainFrame();
+		
+		//create the client model and
+		//register the mainFrame as observer
+		clientModel = new ClientModel();
+		clientModel.addObserver(mainFrame);
         
         //Create and set up the Debug window.
         //debugFrame = new DebugFrame(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY());
@@ -48,25 +56,50 @@ public class Client {
         mainFrame.toFront();
 	}
 	
-	private static void startConnection() { 
-        common.ConnectionHandler conn = new ConnectionHandler(null, 0, true);
+	public static void signIn(String username) {
+		clientModel.setSigningIn(true);
+		startConnection();
+		sendRegister(username);
+	}
+	
+	private static void startConnection() {
+		//Timeout if no connection could be established
+		new Timer().schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if (clientModel.isSigningIn() && !clientModel.isSignedIn()) {
+					clientModel.setSigningIn(false);
+				}
+			}
+		}, CLIENT_SERVER_TIMEOUT);
+		
+		//Instantiate a new connection
+        ConnectionHandler conn = new ConnectionHandler(null, 0, true);
         localPort = conn.getPort();
         
+        //Protocol is listening to process incoming messages
         protocol = new Protocol();
 		conn.addObserver(protocol);
+		
+		//Start a thread to listen for connections
         new Thread(conn).start();
 	}
 	
-	public static void sendRegister(String username) {
+	private static void sendRegister(String username) {
 		ConnectionHandler conn = new ConnectionHandler("localhost", 
 				Protocol.SERVER_PORT, false);
+		
         Message msg = new CSRegister(new Contact(username, true,
-        		"localhost", localPort, new ArrayList()));
+        		"localhost", localPort, new ArrayList<String>()));
+        
         conn.setObject(msg);
+        
         new Thread(conn).start();
 	}
 	
 	private static void log(String msg) {
-		debugFrame.log("Client: " + msg);
+		if (debugFrame != null) {
+			debugFrame.log("Client: " + msg);
+		}
 	}
 }

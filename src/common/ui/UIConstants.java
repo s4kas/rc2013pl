@@ -4,6 +4,7 @@ public class UIConstants {
 	
 	public static final String SIGN_IN_BUTTON = "Sign In";
 	public static final String SIGN_IN_LABEL = "Enter Username";
+	public static final String SIGNING_IN_LABEL = "Signing in ...";
 	public static final String CLIENT_MAIN_TITLE = "PIST Client";
 	
 	public static final String DEBUG_TITLE = "Debug Console";
