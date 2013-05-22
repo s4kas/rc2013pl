@@ -9,12 +9,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import common.ConnectionHandler;
-import common.protocol.CSRegister;
-import common.protocol.Contact;
-import common.protocol.Message;
-import common.protocol.Protocol;
+import common.protocol.*;
 import common.ui.DebugFrame;
-
 import client.ui.ClientMainFrame;
 import client.ui.ClientModel;
 
@@ -29,12 +25,12 @@ public class Client {
 	private static ClientMainFrame mainFrame;
 	private static ClientModel clientModel;
 	private static DebugFrame debugFrame;
-	private static Protocol protocol;
+	private static IProtocol protocol;
 	private static int localPort;
 
-	public static void main (String[] args) {          
-		//start the UI
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+    public static void main(String[] args) {
+        //start the UI
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowUI();
             }
@@ -78,30 +74,46 @@ public class Client {
 		//Instantiate a new connection
         ConnectionHandler conn = new ConnectionHandler(null, 0, true);
         localPort = conn.getPort();
-        
+
         //Protocol is listening to process incoming messages
         protocol = new Protocol();
-		conn.addObserver(protocol);
+        conn.addObserver(protocol);
 		
 		//Start a thread to listen for connections
         new Thread(conn).start();
-	}
-	
-	private static void sendRegister(String username) {
-		ConnectionHandler conn = new ConnectionHandler("localhost", 
-				Protocol.SERVER_PORT, false);
+    }
+
+    public static void sendRegister(String username) {
+        ConnectionHandler conn = new ConnectionHandler("localhost",
+                protocol.getServerPort(), false);
 		
         Message msg = new CSRegister(new Contact(username, true,
-        		"localhost", localPort, new ArrayList<String>()));
-        
+                "localhost", localPort, new ArrayList()));
         conn.setObject(msg);
         
         new Thread(conn).start();
-	}
-	
-	private static void log(String msg) {
-		if (debugFrame != null) {
-			debugFrame.log("Client: " + msg);
-		}
-	}
+    }
+
+    private static void log(String msg) {
+        debugFrame.log("Client: " + msg);
+    }
+
+    public static boolean processRegister(SCRegister msg) {
+        return true;
+    }    
+    //TODO: change object to the proper message
+
+    public static boolean processStartMessage(Object msg) {
+        return true;
+    }    
+    //TODO: change object to the proper message
+
+    public static boolean processUpdateInfo(Object msg) {
+        return true;
+    }    
+    //TODO: change object to the proper message
+
+    public static boolean processMessage(Object msg) {
+        return true;
+    }   
 }
