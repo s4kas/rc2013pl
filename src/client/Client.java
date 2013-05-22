@@ -57,13 +57,10 @@ public class Client {
 	}
 	
 	public static void signIn(String username) {
+		//update the UI
 		clientModel.setSigningIn(true);
-		startConnection();
-		sendRegister(username);
-	}
-	
-	private static void startConnection() {
-		//Timeout if no connection could be established
+		
+		//Timeout if sign in unsuccessful
 		new Timer().schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -73,6 +70,11 @@ public class Client {
 			}
 		}, CLIENT_SERVER_TIMEOUT);
 		
+		//send a register to the server
+		sendRegister(username);
+	}
+	
+	private static void startConnection() {
 		//Instantiate a new connection
         ConnectionHandler conn = new ConnectionHandler(null, 0, true);
         localPort = conn.getPort();
