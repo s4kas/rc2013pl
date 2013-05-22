@@ -13,9 +13,8 @@ import java.util.Date;
  */
 public abstract class Message implements Serializable {
 
-	private static final long serialVersionUID = 7218276744535174659L;
-	
-	private MessageType messageType;
+    private static final long serialVersionUID = 7218276744535174659L;
+    private MessageType messageType;
     private Date timestamp;
 
     public Message(MessageType messageType) {
@@ -23,15 +22,15 @@ public abstract class Message implements Serializable {
         this.messageType = messageType;
     }
 
-	public MessageType getMessageType() {
-		return messageType;
-	}
+    public MessageType getMessageType() {
+        return messageType;
+    }
 
-	protected void setMessageType(MessageType messageType) {
-		this.messageType = messageType;
-	}
+    protected void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
 
-	public Date getTimestamp() {
-		return timestamp;
-	}    
+    public Date getTimestamp() {
+        return timestamp;
+    }
 }

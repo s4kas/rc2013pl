@@ -14,66 +14,66 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Observable;
 
-
 /**
  *
  * @author Emanuel
  */
 public class ConnectionHandler extends Observable implements Runnable {
+
     private String host;
     private int port;
     private boolean isServer;
     private Object o;
-    
-    public ConnectionHandler(String host,int port,boolean isServer){
+
+    public ConnectionHandler(String host, int port, boolean isServer) {
         this.host = host;
         this.port = port;
         this.isServer = isServer;
     }
+
     @Override
     public void run() {
         try {
             if (isServer) {
                 startServerSocket();
-            }
-        else {
+            } else {
                 startClientSocket();
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.print(e.getMessage());
-        }                    
+        }
     }
-    
-    public void setObject(Object o){
+
+    public void setObject(Object o) {
         this.o = o;
     }
-    
+
     public int getPort() {
-    	return this.port;
+        return this.port;
     }
-    
-    private void startServerSocket() throws UnknownHostException, IOException, ClassNotFoundException{
+
+    private void startServerSocket() throws UnknownHostException, IOException, ClassNotFoundException {
         // Create server socket.
         ServerSocket serverSocket = new ServerSocket(port);
         port = serverSocket.getLocalPort();
-        while(true){
+        while (true) {
             // Wait for a client connection.
             Socket connectionSocket = serverSocket.accept();
-            InputStream is = connectionSocket.getInputStream();  
+            InputStream is = connectionSocket.getInputStream();
             ObjectInputStream ois = new ObjectInputStream(is);
-            
+
             //notify the protocol
             setChanged();
             notifyObservers(ois.readObject());
-            
+
             //close this connection
             ois.close();
-            is.close();  
-            connectionSocket.close();  
+            is.close();
+            connectionSocket.close();
         }
     }
-    
-    private void startClientSocket() throws UnknownHostException, IOException{
+
+    private void startClientSocket() throws UnknownHostException, IOException {
         // Create socket connected to output stream.
         Socket socket = new Socket(host, port);
         OutputStream os = socket.getOutputStream();
@@ -83,5 +83,4 @@ public class ConnectionHandler extends Observable implements Runnable {
         os.close();
         socket.close();
     }
-
 }

@@ -10,16 +10,15 @@ package common.protocol;
  */
 public class CSRegister extends Message {
 
-	private static final long serialVersionUID = -5785258486527568326L;
-	private Contact user;
-    
-    public CSRegister(Contact c){
-    	super(MessageType.CSRegister);
-    	user = c;
+    private static final long serialVersionUID = -5785258486527568326L;
+    private Contact user;
+
+    public CSRegister(Contact c) {
+        super(MessageType.CSRegister);
+        user = c;
     }
 
     public Contact getUser() {
         return user;
     }
-    
 }
