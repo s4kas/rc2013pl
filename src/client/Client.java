@@ -24,7 +24,7 @@ import client.ui.ClientModel;
  */
 public class Client {
 	
-	private static final int CLIENT_SERVER_TIMEOUT = 10000;
+	private static final int CLIENT_SERVER_TIMEOUT = 10000; //10 sec.
 	
 	private static ClientMainFrame mainFrame;
 	private static ClientModel clientModel;

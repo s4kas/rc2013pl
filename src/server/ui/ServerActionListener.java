@@ -2,6 +2,9 @@ package server.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import common.ui.UIConstants;
+
 import server.Server;
 
 public class ServerActionListener implements ActionListener {
@@ -16,7 +19,11 @@ public class ServerActionListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(mainFrame.getStartButton())) {
-			Server.startServer();
+			if (e.getActionCommand().equals(UIConstants.START_BUTTON)) {
+				Server.startServer();
+			} else if (e.getActionCommand().equals(UIConstants.STOP_BUTTON)) {
+				Server.stopServer();
+			}
 		}
 		
 	}

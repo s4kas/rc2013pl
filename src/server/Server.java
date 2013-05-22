@@ -6,9 +6,9 @@ package server;
 
 import common.ConnectionHandler;
 import common.protocol.Protocol;
-import common.protocol.CSRegister;
 import common.ui.DebugFrame;
 import server.ui.ServerMainFrame;
+import server.ui.ServerModel;
 
 /**
  *
@@ -17,8 +17,10 @@ import server.ui.ServerMainFrame;
 public class Server {
 	
 	private static ServerMainFrame mainFrame;
+	private static ServerModel serverModel;
 	private static DebugFrame debugFrame;
 	private static Protocol protocol;
+	private static ConnectionHandler conn;
 	
 	public static void main (String[] args) {
 		//start the UI
@@ -33,6 +35,10 @@ public class Server {
 		//Create and set up the Main window.
 		mainFrame = new ServerMainFrame();
         
+		//start a server Model and register mainFrame observer
+		serverModel = new ServerModel();
+		serverModel.addObserver(mainFrame);
+		
         //Create and set up the Debug window.
         //debugFrame = new DebugFrame(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY());
 
@@ -40,18 +46,27 @@ public class Server {
 	}
 	
 	public static void startServer() {
-		common.ConnectionHandler conn = new ConnectionHandler(null, 
-				Protocol.SERVER_PORT, true);
+		//update UI
+		serverModel.setStarted(true);
+		
+		//instantiate a new connection handler
+		conn = new ConnectionHandler(null, Protocol.SERVER_PORT, true);
+		
+		//a protocol to process incoming messages
 		protocol = new Protocol();
 		conn.addObserver(protocol);
+		
+		//a thread to listen for incoming messages
         new Thread(conn).start();
 	}
 	
-	private static void log(String msg) {
-		debugFrame.log("Server: " + msg);
+	public static void stopServer() {
+		serverModel.setStarted(false);
 	}
-        public static boolean processRegister(CSRegister msg){
-            
-            return true;
-        }
+	
+	private static void log(String msg) {
+		if (debugFrame != null) {
+			debugFrame.log("Server: " + msg);
+		}
+	}
 }
