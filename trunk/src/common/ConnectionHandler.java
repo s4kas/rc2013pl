@@ -14,14 +14,12 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Observable;
 
-import common.protocol.CSRegister;
-
 
 /**
  *
  * @author Emanuel
  */
-public class ConnectionHandler extends Observable implements Runnable{
+public class ConnectionHandler extends Observable implements Runnable {
     private String host;
     private int port;
     private boolean isServer;
