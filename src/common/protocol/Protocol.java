@@ -14,7 +14,7 @@ public class Protocol implements Observer {
 		
 		switch (msg.getMessageType()) {
 		case CSRegister:
-                    server.Server.processRegister((CSR)arg);
+                    server.Server.processRegister((CSRegister)arg);
 			break;
 		case CSStartMessage:
 			break;
