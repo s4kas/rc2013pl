@@ -35,6 +35,8 @@ public class Client {
                 createAndShowUI();
             }
         });
+        
+        startConnection();
 	}
 	
 	private static void createAndShowUI() {
