@@ -6,37 +6,51 @@ import java.util.Observable;
 
 public class ClientModel extends Observable {
 	
-	private boolean isSignedIn;
-	private boolean isSigningIn;
+	private enum Status {SIGNEDIN, SIGNEDOUT, SIGNINGIN};
+	
+	private String signedInUser;
 	private String errorMsg;
 	private List<String> userList;
+	private Status status;
 	
 	public ClientModel () {
-		this.isSignedIn = false;
-		this.isSigningIn = false;
+		this.signedInUser = "";
+		this.status = Status.SIGNEDOUT;
 		this.errorMsg = "";
 		this.userList = new ArrayList<String>();
 	}
 	
 	public boolean isSignedIn() {
-		return isSignedIn;
+		return status.equals(Status.SIGNEDIN);
 	}
 	
-	public void setSignedIn(boolean isSignedIn) {
-		if (this.isSignedIn != isSignedIn) {
-			this.isSignedIn = isSignedIn;
+	public boolean isSigningIn() {
+		return this.status.equals(Status.SIGNINGIN);
+	}
+	
+	public boolean isSignedOut() {
+		return this.status.equals(Status.SIGNEDOUT);
+	}
+	
+	public void setSignedIn() {
+		if (!this.status.equals(Status.SIGNEDIN)) {
+			this.status = Status.SIGNEDIN;
 			setChanged();
 			notifyObservers();
 		}
 	}
 	
-	public boolean isSigningIn() {
-		return isSigningIn;
+	public void setSigningIn() {
+		if (!this.status.equals(Status.SIGNINGIN)) {
+			this.status = Status.SIGNINGIN;
+			setChanged();
+			notifyObservers();
+		}
 	}
 	
-	public void setSigningIn(boolean isSigningIn) {
-		if (this.isSigningIn != isSigningIn) {
-			this.isSigningIn = isSigningIn;
+	public void setSignedOut() {
+		if (!this.status.equals(Status.SIGNEDOUT)) {
+			this.status = Status.SIGNEDOUT;
 			setChanged();
 			notifyObservers();
 		}
@@ -47,13 +61,37 @@ public class ClientModel extends Observable {
 	}
 
 	public void setErrorMsg(String errorMsg) {
-		this.errorMsg = errorMsg;
+		if (!this.errorMsg.equals(errorMsg)) {
+			this.errorMsg = errorMsg;
+			setChanged();
+			notifyObservers();
+		}
+	}
+	
+	public void clearErrorMsg() {
+		this.errorMsg = "";
+	}
+	
+	public boolean hasError() {
+		return errorMsg == null || this.errorMsg.length() > 0;
 	}
 	
 	public List<String> getUserList() {
 		return userList;
 	}
+	
 	public void setUserList(List<String> userList) {
-		this.userList = userList;
+		//TODO validate the list
+		this.userList.addAll(userList);
+		setChanged();
+		notifyObservers();
+	}
+
+	public String getSignedInUser() {
+		return signedInUser;
+	}
+
+	public void setSignedInUser(String signedInUser) {
+		this.signedInUser = signedInUser;
 	}
 }

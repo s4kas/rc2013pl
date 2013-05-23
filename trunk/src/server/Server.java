@@ -33,6 +33,10 @@ public class Server {
             }
         });
     }
+    
+    private static void log(String msg) {
+        debugFrame.log("Server: " + msg);
+    }
 
     private static void createAndShowUI() {
         //Create and set up the Main window.
@@ -61,9 +65,10 @@ public class Server {
         //a thread to listen for incoming messages
         new Thread(conn).start();
     }
-
-    private static void log(String msg) {
-        debugFrame.log("Server: " + msg);
+    
+    public static void stopServer() {
+    	conn.stopServer();
+    	serverModel.setStarted(false);
     }
 
     public static boolean processRegister(CSRegister msg, String host, int port) {
@@ -71,7 +76,7 @@ public class Server {
         user.setConnected(true);
         users.put(user.getName(), user);
         Message response = new SCRegister(getOnlineUser());
-        sendMessage(response, host, port);
+        sendMessage(response, user.getHost(), user.getPort());
         return true;
     }
     //TODO: change object to the proper message

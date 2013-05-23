@@ -24,6 +24,7 @@ public class ConnectionHandler extends Observable implements Runnable {
     private int port;
     private boolean isServer;
     private Object o;
+    ServerSocket serverSocket;
 
     public ConnectionHandler(String host, int port, boolean isServer) {
         this.host = host;
@@ -51,10 +52,18 @@ public class ConnectionHandler extends Observable implements Runnable {
     public int getPort() {
         return this.port;
     }
+    
+    public void stopServer() {
+    	try {
+			serverSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 
     private void startServerSocket() throws UnknownHostException, IOException, ClassNotFoundException {
         // Create server socket.
-        ServerSocket serverSocket = new ServerSocket(port);
+        serverSocket = new ServerSocket(port);
         port = serverSocket.getLocalPort();
         while (true) {
             // Wait for a client connection.

@@ -7,10 +7,10 @@ package client;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import common.ConnectionHandler;
 import common.protocol.*;
 import common.ui.DebugFrame;
+import common.ui.UIConstants;
 import client.ui.ClientMainFrame;
 import client.ui.ClientModel;
 
@@ -26,7 +26,7 @@ public class Client {
 	private static ClientModel clientModel;
 	private static DebugFrame debugFrame;
 	private static IProtocol protocol;
-	private static int localPort;
+	private static ConnectionHandler conn;
 
     public static void main(String[] args) {
         //start the UI
@@ -36,8 +36,13 @@ public class Client {
             }
         });
         
+        //start a connection to process incoming messages
         startConnection();
 	}
+    
+    private static void log(String msg) {
+        debugFrame.log("Client: " + msg);
+    }
 	
 	private static void createAndShowUI() {
 		//Create and set up the Main window.
@@ -56,14 +61,16 @@ public class Client {
 	
 	public static void signIn(String username) {
 		//update the UI
-		clientModel.setSigningIn(true);
+		clientModel.setSigningIn();
 		
 		//Timeout if sign in unsuccessful
 		new Timer().schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if (clientModel.isSigningIn() && !clientModel.isSignedIn()) {
-					clientModel.setSigningIn(false);
+				if (clientModel.isSigningIn()) {
+					clientModel.setErrorMsg(UIConstants.CLIENT_FAILED_CONNECT);
+					clientModel.clearErrorMsg();
+					clientModel.setSignedOut();
 				}
 			}
 		}, CLIENT_SERVER_TIMEOUT);
@@ -74,8 +81,7 @@ public class Client {
 	
 	private static void startConnection() {
 		//Instantiate a new connection
-        ConnectionHandler conn = new ConnectionHandler(null, 0, true);
-        localPort = conn.getPort();
+        conn = new ConnectionHandler(null, 0, true);
 
         //Protocol is listening to process incoming messages
         protocol = new Protocol();
@@ -86,21 +92,34 @@ public class Client {
     }
 
     public static void sendRegister(String username) {
-        ConnectionHandler conn = new ConnectionHandler("localhost",
+    	clientModel.setSignedInUser(username);
+    	
+        ConnectionHandler connSend = new ConnectionHandler("localhost",
                 protocol.getServerPort(), false);
 		
         Message msg = new CSRegister(new Contact(username, true,
-                "localhost", localPort, new ArrayList()));
-        conn.setObject(msg);
+                "localhost", conn.getPort(), new ArrayList<String>()));
+        connSend.setObject(msg);
         
-        new Thread(conn).start();
+        new Thread(connSend).start();
     }
-
-    private static void log(String msg) {
-        debugFrame.log("Client: " + msg);
+    
+    public static void sendStartMessage(int userListIndex) {
+    	String user2Talk = clientModel.getUserList().get(userListIndex);
+    	
+    	ConnectionHandler connSend = new ConnectionHandler("localhost",
+                protocol.getServerPort(), false);
+		
+        Message msg = new CSStartMessage(new Contact(clientModel.getSignedInUser(), 
+        		true, "localhost", conn.getPort(), new ArrayList<String>()), user2Talk);
+        connSend.setObject(msg);
+        
+        new Thread(connSend).start();
     }
 
     public static boolean processRegister(SCRegister msg) {
+    	clientModel.setSignedIn();
+    	clientModel.setUserList(msg.getUsersList());
         return true;
     }    
     //TODO: change object to the proper message
