@@ -11,6 +11,7 @@ import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,8 +33,9 @@ public class ClientMainFrame extends JFrame implements Observer {
 	private JScrollPane mainPanelScroll;
 	private JButton signInButton;
 	private JTextField signInUser;
-	private JLabel signInLabel;
-	private JList<JLabel> userList;
+	private JLabel signInLabel, usersSizeLabel;
+	private JList<String> userList;
+	private DefaultListModel<String> listModel;
 	private ClientActionListener clientActionListener;
 	
 	@Override
@@ -42,10 +44,12 @@ public class ClientMainFrame extends JFrame implements Observer {
 		
 		//update userList
 		List<String> clientModelUserList = clientModel.getUserList();
-		userList = new JList<JLabel>();
+		listModel = new DefaultListModel<String>();
 		for (String user : clientModelUserList) {
-			userList.add(new JLabel(user));
+			listModel.addElement(user);
 		}
+		userList = new JList<String>(listModel);
+		userList.addMouseListener(clientActionListener);
 		
 		//update status
 		if (clientModel.isSigningIn()) {
@@ -53,11 +57,19 @@ public class ClientMainFrame extends JFrame implements Observer {
 			signInButton.setEnabled(false);
 			signInLabel.setText(UIConstants.SIGNING_IN_LABEL);
 		} else if (clientModel.isSignedIn()) {
-			startUserListPanel();
+			mainPanel.removeAll();
+			loadUserListPanel();
+			mainPanel.validate();
+			mainPanel.repaint();
 		} else {
 			signInUser.setEnabled(true);
 			signInButton.setEnabled(true);
 			signInLabel.setText(UIConstants.SIGN_IN_LABEL);
+		}
+		
+		//set error msg ?
+		if (clientModel.hasError()) {
+			showError(clientModel.getErrorMsg());
 		}
 	}
 	
@@ -69,19 +81,23 @@ public class ClientMainFrame extends JFrame implements Observer {
 		return signInUser;
 	}
 	
+	public JList<String> getUserJList() {
+		return userList;
+	}
+	
 	public ClientMainFrame() {
 		//start the action listener
 		clientActionListener = new ClientActionListener(this);
 		
 		setTitle(UIConstants.CLIENT_MAIN_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		startMainPanel();
+		loadSignInPanel();
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
 	
-	private void startMainPanel() {	
+	private void loadSignInPanel() {	
 		//main panel
 		mainPanel = new JPanel();
 		mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -112,19 +128,17 @@ public class ClientMainFrame extends JFrame implements Observer {
 		add(mainPanel);
 	}
 	
-	private void startUserListPanel() {		
+	private void loadUserListPanel() {
+		mainPanel.removeAll();
+		
 		//main panel scroll
 		mainPanelScroll = new JScrollPane(userList);
 		
-		//main panel
-		mainPanel = new JPanel();
-		mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-		mainPanel.setLayout(new BorderLayout(5,5));
-		mainPanel.setPreferredSize(new Dimension(MAINPANEL_WIDTH, MAINPANEL_HEIGHT));
-		mainPanel.add(new JLabel("User List", JLabel.CENTER), BorderLayout.PAGE_START);
-		mainPanel.add(mainPanelScroll, BorderLayout.CENTER);
-
-		add(mainPanel);
+		int onlineContacts = userList.getModel().getSize();
+		usersSizeLabel = new JLabel(onlineContacts + UIConstants.CONTACTS_ONLINE, 
+				JLabel.CENTER);
+		mainPanel.add(mainPanelScroll);
+		mainPanel.add(usersSizeLabel);
 	}
 	
 	private void showError(String errorMsg) {

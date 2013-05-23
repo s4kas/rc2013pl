@@ -6,6 +6,8 @@ public class UIConstants {
 	public static final String SIGN_IN_LABEL = "Enter Username";
 	public static final String SIGNING_IN_LABEL = "Signing in ...";
 	public static final String CLIENT_MAIN_TITLE = "PIST Client";
+	public static final String CONTACTS_ONLINE = " Contact(s) online!";
+	public static final String CLIENT_FAILED_CONNECT = "Ups! Server Offline?";
 	
 	public static final String DEBUG_TITLE = "Debug Console";
 	public static final String DEBUG_START = "Debuging started";
