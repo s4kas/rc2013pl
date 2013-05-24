@@ -33,7 +33,7 @@ public class Server {
             }
         });
     }
-    
+
     private static void log(String msg) {
         debugFrame.log("Server: " + msg);
     }
@@ -65,10 +65,10 @@ public class Server {
         //a thread to listen for incoming messages
         new Thread(conn).start();
     }
-    
+
     public static void stopServer() {
-    	conn.stopServer();
-    	serverModel.setStarted(false);
+        conn.stopServer();
+        serverModel.setStarted(false);
     }
 
     public static boolean processRegister(CSRegister msg, String host, int port) {
@@ -79,10 +79,20 @@ public class Server {
         sendMessage(response, user.getHost(), user.getPort());
         return true;
     }
-    //TODO: change object to the proper message
 
-    public static boolean processStartMessage(Object msg, String host, int port) {
-        return true;
+    public static boolean processStartMessage(CSStartMessage msg, String host, int port) {
+        // get contact from users
+        Contact destinationUser = users.get(msg.getUser2Talk());
+        // Create message to check if user is connected
+        SCUpdateInfo request = new SCUpdateInfo();
+        request.setRequesterName(destinationUser.getName());
+        
+        if (destinationUser == null) {
+            return false;
+        } else {
+            sendMessage(request, destinationUser.getHost(), destinationUser.getPort());
+            return true;
+        }
     }
     //TODO: change object to the proper message
 
@@ -91,9 +101,9 @@ public class Server {
     }
 
     private static void sendMessage(Message msg, String host, int port) {
-        ConnectionHandler conn = new ConnectionHandler(host, port, false);
-        conn.setObject(msg);
-        new Thread(conn).start();
+        ConnectionHandler connection = new ConnectionHandler(host, port, false);
+        connection.setObject(msg);
+        new Thread(connection).start();
     }
 
     private static ArrayList<String> getOnlineUser() {
