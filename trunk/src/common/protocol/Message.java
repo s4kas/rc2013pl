@@ -16,6 +16,8 @@ public abstract class Message implements Serializable {
     private static final long serialVersionUID = 7218276744535174659L;
     private MessageType messageType;
     private Date timestamp;
+    private String senderHost;
+    private int senderPort;
 
     public Message(MessageType messageType) {
         this.timestamp = new Date();
@@ -33,4 +35,21 @@ public abstract class Message implements Serializable {
     public Date getTimestamp() {
         return timestamp;
     }
+
+    public String getSenderHost() {
+        return senderHost;
+    }
+
+    public void setSenderHost(String senderHost) {
+        this.senderHost = senderHost;
+    }
+
+    public int getSenderPort() {
+        return senderPort;
+    }
+
+    public void setSenderPort(int senderPort) {
+        this.senderPort = senderPort;
+    }
+    
 }

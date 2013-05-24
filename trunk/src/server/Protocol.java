@@ -14,7 +14,7 @@ public class Protocol extends IProtocol {
                 Server.processRegister((CSRegister) arg,"",6666 );
                 break;
             case CSStartMessage:
-                Server.processStartMessage(arg,"",6666);
+                Server.processStartMessage((CSStartMessage)arg,"",6666);
                 break;
             case CSUpdateInfo:
                 Server.processUpdateInfo(arg,"",6666);
