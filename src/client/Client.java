@@ -77,9 +77,15 @@ public class Client {
                 }
             }
         }, CLIENT_SERVER_TIMEOUT);
+        // send a register every 1 min to update user list
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                //send a register to the server
+                sendRegister();
+            }
+        }, 0, 1 * 10 * 1000);
 
-        //send a register to the server
-        sendRegister();
     }
 
     public static void startChat(int userListIndex) {
@@ -126,7 +132,7 @@ public class Client {
     }
 
     private static void sendRegister() {
-        ConnectionHandler connSend = new ConnectionHandler("localhost",
+        ConnectionHandler connSend = new ConnectionHandler(protocol.getServerHost(),
                 protocol.getServerPort(), false);
         Message msg = new CSRegister(clientModel.getSignedInUser(), conn);
         connSend.setObject(msg);
@@ -142,7 +148,7 @@ public class Client {
     }
 
     private static void sendMessage(Contact contact, String message) {
-        CCMessage request = new CCMessage(message, conn);
+        CCMessage request = new CCMessage(message, conn, clientModel.getSignedInUser().getName());
         protocol.sendMessage(request, contact.getHost(), contact.getPort());
     }
 
@@ -154,6 +160,7 @@ public class Client {
 
     public static boolean processStartMessage(SCStartMessage msg) {
         // TODO: this is the settings of the window for msg.user
+        clientModel.addToUserListWithChat(msg.getUser());
         return true;
     }
 
@@ -165,7 +172,9 @@ public class Client {
     }
 
     public static boolean processMessage(CCMessage msg) {
-        // TODO: insert new line in chat of requester
+        //Update Model
+        ChatModel chatModel = listOfOpenChatModels.get(msg.getSenderName());
+        chatModel.setMessage(new String[]{msg.getSenderName(),msg.getText()});
         return true;
     }
 }
