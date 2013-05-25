@@ -67,45 +67,41 @@ public class Server {
         serverModel.setStarted(false);
     }
 
-    public static boolean processRegister(CSRegister msg, String host, int port) {
+    public static boolean processRegister(CSRegister msg) {
         Contact user = msg.getUser();
         user.setConnected(true);
         users.put(user.getName(), user);
-        Message response = new SCRegister(getOnlineUser());
-        sendMessage(response, user.getHost(), user.getPort());
+        Message response = new SCRegister(getOnlineUser(user.getName()), conn);
+        protocol.sendMessage(response, user.getHost(), user.getPort());
         return true;
     }
 
-    public static boolean processStartMessage(CSStartMessage msg, String host, int port) {
+    public static boolean processStartMessage(CSStartMessage msg) {
         // get contact from users
         Contact destinationUser = users.get(msg.getUser2Talk());
         // Create message to check if user is connected
-        SCUpdateInfo request = new SCUpdateInfo();
+        SCUpdateInfo request = new SCUpdateInfo(conn);
         request.setRequesterName(destinationUser.getName());
-        
+
         if (destinationUser == null) {
             return false;
         } else {
-            sendMessage(request, destinationUser.getHost(), destinationUser.getPort());
+            protocol.sendMessage(request, destinationUser.getHost(), destinationUser.getPort());
             return true;
         }
     }
-    //TODO: change object to the proper message
 
-    public static boolean processUpdateInfo(Object msg, String host, int port) {
+    public static boolean processUpdateInfo(CSUpdateInfo msg) {
+        Contact requesterContact = users.get(msg.getRequesterName());
+        SCStartMessage response = new SCStartMessage(msg.getUser(), conn);
+        protocol.sendMessage(response, requesterContact.getHost(), requesterContact.getPort());
         return true;
     }
 
-    private static void sendMessage(Message msg, String host, int port) {
-        ConnectionHandler connection = new ConnectionHandler(host, port, false);
-        connection.setObject(msg);
-        new Thread(connection).start();
-    }
-
-    private static ArrayList<String> getOnlineUser() {
+    private static ArrayList<String> getOnlineUser(String requesterName) {
         ArrayList<String> resultList = new ArrayList<>();
         for (Contact contact : users.values()) {
-            if (contact.isConnected()) {
+            if (contact.isConnected() && !requesterName.equals(contact.getName())) {
                 resultList.add(contact.getName());
             }
         }
