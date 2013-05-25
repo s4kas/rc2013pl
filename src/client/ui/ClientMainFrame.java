@@ -34,7 +34,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 	
 	private JPanel mainPanel;
 	private JScrollPane mainPanelScroll;
-	private JButton signInButton;
+	private JButton signInButton, logOutButton;
 	private JTextField signInUser;
 	private JLabel signInLabel, usersSizeLabel;
 	private JList<String> userList;
@@ -53,7 +53,6 @@ public class ClientMainFrame extends JFrame implements Observer {
 		
 		//Notifications
 		notifQueue = new NotificationQueue();
-
 		
 		setTitle(UIConstants.CLIENT_MAIN_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -95,7 +94,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 		} else if (arg instanceof ClientModel.Status) { //update status
 			
 			ClientModel.Status status = (ClientModel.Status)arg;
-			updateClientStatus(status);
+			updateClientStatus(status, ((ClientModel)o).getSignedInUser().getName());
 			
 		} else if (arg instanceof String) { //update error msg
 			
@@ -137,17 +136,32 @@ public class ClientMainFrame extends JFrame implements Observer {
 		add(mainPanel);
 	}
 	
-	private void loadUserListPanel() {
+	private void loadUserListPanel(String userName) {
 		mainPanel.removeAll();
+		mainPanel.add(Box.createVerticalStrut(10));
+		JLabel loggedUserLabel = new JLabel("Logged user: " + userName);
+		loggedUserLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		mainPanel.add(loggedUserLabel);
+		mainPanel.add(Box.createVerticalStrut(20));
 		
 		//main panel scroll
+		JLabel userListLabel = new JLabel("User List");
+		userListLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		mainPanel.add(userListLabel);
 		mainPanelScroll = new JScrollPane(userList);
 		
 		int onlineContacts = userList.getModel().getSize();
 		usersSizeLabel = new JLabel(onlineContacts + UIConstants.CONTACTS_ONLINE, 
 				JLabel.CENTER);
+		usersSizeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		mainPanel.add(mainPanelScroll);
 		mainPanel.add(usersSizeLabel);
+		mainPanel.add(Box.createVerticalStrut(20));
+		
+		logOutButton = new JButton("Log Out");
+		logOutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		mainPanel.add(logOutButton);
+		mainPanel.add(Box.createVerticalStrut(10));
 	}
 	
 	private void updateListOfUsers(List<String> allUsers) {
@@ -155,9 +169,14 @@ public class ClientMainFrame extends JFrame implements Observer {
 		for (String user : allUsers) {
 			listModel.addElement(user);
 		}
+		
+		if (usersSizeLabel != null) {
+			int onlineContacts = userList.getModel().getSize();
+			usersSizeLabel.setText(onlineContacts + UIConstants.CONTACTS_ONLINE);
+		}
 	}
 	
-	private void updateClientStatus(ClientModel.Status status) {
+	private void updateClientStatus(ClientModel.Status status, String userName) {
 		
 		switch(status) {
 			case SIGNINGIN:
@@ -167,7 +186,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 				break;
 			case SIGNEDIN:
 				mainPanel.removeAll();
-				loadUserListPanel();
+				loadUserListPanel(userName);
 				mainPanel.validate();
 				mainPanel.repaint();
 				break;

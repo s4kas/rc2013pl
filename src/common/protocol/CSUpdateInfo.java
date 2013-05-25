@@ -5,8 +5,7 @@ import common.ConnectionHandler;
 public class CSUpdateInfo extends Message {
 
     private static final long serialVersionUID = 5655903916952837337L;
-    private Contact user;
-    private String requesterName;
+    private Contact user, requester;
 
     public CSUpdateInfo(Contact c, ConnectionHandler conn) {
         super(MessageType.CSUpdateInfo, conn);
@@ -17,11 +16,11 @@ public class CSUpdateInfo extends Message {
         return user;
     }
 
-    public String getRequesterName() {
-        return requesterName;
+    public Contact getRequester() {
+        return requester;
     }
 
-    public void setRequesterName(String requesterName) {
-        this.requesterName = requesterName;
+    public void setRequester(Contact requester) {
+        this.requester = requester;
     }
 }
