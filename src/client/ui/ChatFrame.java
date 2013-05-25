@@ -83,10 +83,10 @@ public class ChatFrame extends JFrame implements Observer {
 			sendTextArea.setText(null);
 			sendTextArea.setCaretPosition(0);
 			
-		} else if (arg == null) { //send the chat window to front
-			setVisible(true);
-			toFront();
 		}
+		
+		setVisible(true);
+		toFront();
 	}
 
 	private void loadMainPanel() {
