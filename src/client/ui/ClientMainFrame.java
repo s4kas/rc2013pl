@@ -1,10 +1,9 @@
 package client.ui;
 
-import java.awt.AWTException;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.TrayIcon;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -21,6 +20,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import net.sf.jcarrierpigeon.Notification;
+import net.sf.jcarrierpigeon.NotificationQueue;
+import net.sf.jcarrierpigeon.WindowPosition;
 
 import common.ui.UIConstants;
 
@@ -38,7 +40,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 	private JList<String> userList;
 	private DefaultListModel<String> listModel;
 	private ClientActionListener clientActionListener;
-	private TrayIcon trayIcon;
+	private NotificationQueue notifQueue;
 	
 	public ClientMainFrame() {
 		//start the action listener
@@ -49,12 +51,9 @@ public class ClientMainFrame extends JFrame implements Observer {
 		userList = new JList<String>(listModel);
 		userList.addMouseListener(clientActionListener);
 		
-		//TrayIcon for notifications
-		trayIcon = new java.awt.TrayIcon(
-				java.awt.Toolkit.getDefaultToolkit().getImage(""));
-		try {
-			java.awt.SystemTray.getSystemTray().add(trayIcon);
-		} catch (AWTException e) {}
+		//Notifications
+		notifQueue = new NotificationQueue();
+
 		
 		setTitle(UIConstants.CLIENT_MAIN_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -82,14 +81,17 @@ public class ClientMainFrame extends JFrame implements Observer {
 		if (arg instanceof Map) { //update userList
 			
 			//Update list of users
+			@SuppressWarnings("unchecked")
 			Map<String, List<String>> usersMap = (Map<String, List<String>>)arg;
 			List<String> allUsers = usersMap.get(ClientModel.ALL_USERS);
 			updateListOfUsers(allUsers);
 			
 			List<String> addedUsers = usersMap.get(ClientModel.ADDED_USERS);
 			List<String> removedUsers = usersMap.get(ClientModel.REMOVED_USERS);
-			showNotification(addedUsers, removedUsers);
-			
+			if (((ClientModel)o).isSignedIn()) {
+				showNotification(addedUsers, removedUsers);
+			}
+
 		} else if (arg instanceof ClientModel.Status) { //update status
 			
 			ClientModel.Status status = (ClientModel.Status)arg;
@@ -180,23 +182,32 @@ public class ClientMainFrame extends JFrame implements Observer {
 	private void showNotification(List<String> addedUsers, List<String> removedUsers) {
 		//Added Users notification
 		if (!addedUsers.isEmpty()) {	
-			StringBuffer message = new StringBuffer();
 			for (String addedUser : addedUsers) {
-				message.append(addedUser + "\n");
+				Notification note = new Notification(getNotificationWindow("Users signing In", 
+						addedUser + " is signing in."), 
+						WindowPosition.BOTTOMRIGHT, 75, 75, 2000);
+				notifQueue.add(note);
 			}
-			trayIcon.displayMessage("Users signing in!", String.valueOf(message), 
-					TrayIcon.MessageType.INFO);
 		}
 		
 		//Removed Users notification
 		if (!removedUsers.isEmpty()) {
-			StringBuffer message = new StringBuffer();
 			for (String removedUser : removedUsers) {
-				message.append(removedUser + "\n");
+				Notification note = new Notification(getNotificationWindow("Users signing Out", 
+						removedUser + " as signed out."), 
+						WindowPosition.BOTTOMRIGHT, 75, 75, 2000);
+				notifQueue.add(note);
 			}
-			trayIcon.displayMessage("Users signing out!", String.valueOf(message), 
-					TrayIcon.MessageType.INFO);
 		}
+	}
+	
+	private JFrame getNotificationWindow(String title, String message) {
+		JFrame jw = new JFrame(title);
+		jw.setLayout(new BorderLayout());
+		jw.add(new JLabel(message), BorderLayout.CENTER);
+		jw.setSize(75,75);
+		
+		return jw;
 	}
 	
 	private void showError(String errorMsg) {
