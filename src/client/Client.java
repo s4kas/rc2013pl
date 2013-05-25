@@ -42,15 +42,19 @@ public class Client {
 
         //instantiate a new Map to control the open chat windows
         listOfOpenChatModels = new ConcurrentHashMap<String, ChatModel>();
+        
+        //create the client model
+        clientModel = new ClientModel();
+        
+        //Protocol
+        protocol = new Protocol();
     }
 
     private static void createAndShowUI() {
         //Create and set up the Main window.
         ClientMainFrame mainFrame = new ClientMainFrame();
 
-        //create the client model and
         //register the mainFrame as observer
-        clientModel = new ClientModel();
         clientModel.addObserver(mainFrame);
 
         //Create and set up the Debug window.
@@ -135,7 +139,6 @@ public class Client {
         conn = new ConnectionHandler(null, 0, true);
 
         //Protocol is listening to process incoming messages
-        protocol = new Protocol();
         conn.addObserver(protocol);
 
         //Start a thread to listen for connections
