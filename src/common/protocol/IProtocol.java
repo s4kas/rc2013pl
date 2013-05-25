@@ -1,19 +1,41 @@
 package common.protocol;
 
 import common.ConnectionHandler;
+import common.properties.CommonProps;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Observer;
 
 public abstract class IProtocol implements Observer {
-
-    private final int SERVER_PORT = 6666;
-    private final String SERVER_HOST = "192.168.1.66";
+	
+    private int serverPort;
+    private String serverHost;
+    private String currentHost;
 
     public int getServerPort() {
-        return SERVER_PORT;
+    	if (serverPort <= 0) {
+    		serverPort = CommonProps.getServerPort();
+    	}
+    	return serverPort;
     }    
 
     public String getServerHost() {
-        return SERVER_HOST;
+    	if (serverHost == null) {
+    		serverHost = CommonProps.getServerHost();
+    	}
+    	return serverHost;
+    }
+    
+    public String getCurrentHost() {
+    	if (currentHost == null) {
+    		try {
+    			currentHost = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+    	}
+        return currentHost;
     }
     
     public void sendMessage(Message msg, String host, int port) {

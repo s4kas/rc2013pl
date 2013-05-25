@@ -61,8 +61,9 @@ public class Client {
 
     public static void signIn(String username) {
         //update the Model
+    	String localAddress = protocol.getCurrentHost();
         clientModel.setSignedInUser(new Contact(username, true,
-                "192.168.1.66", conn.getPort(), new ArrayList<String>()));
+        		localAddress , conn.getPort(), new ArrayList<String>()));
         clientModel.setSigningIn();
 
         //Timeout if sign in unsuccessful
@@ -150,8 +151,8 @@ public class Client {
     }
 
     private static void sendStartMessage(String user2Talk) {
-        ConnectionHandler connSend = new ConnectionHandler("localhost",
-                protocol.getServerPort(), false);
+        ConnectionHandler connSend = new ConnectionHandler(protocol.getServerHost(),
+        		protocol.getServerPort(), false);
         Message msg = new CSStartMessage(clientModel.getSignedInUser(), user2Talk, conn);
         connSend.setObject(msg);
         new Thread(connSend).start();
