@@ -14,6 +14,7 @@ public class ClientModel extends Observable {
 	public static final String ADDED_USERS = "ADDED_USERS";
 	public static final String REMOVED_USERS = "REMOVED_USERS";
 	public static final String ALL_USERS = "ALL_USERS";
+	public static final String FIRST_TIME = "FIRST_TIME";
 	
 	private Contact signedInUser;
 	private List<String> userList;
