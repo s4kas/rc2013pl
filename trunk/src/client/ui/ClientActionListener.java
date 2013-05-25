@@ -29,7 +29,7 @@ public class ClientActionListener extends MouseAdapter implements ActionListener
 		if (e.getClickCount() == 2) {
 			if (e.getSource().equals(mainFrame.getUserJList())) {
 				int index = mainFrame.getUserJList().getSelectedIndex();
-				Client.sendStartMessage(index);
+				Client.startChat(index);
 			}
 		}
 	}
