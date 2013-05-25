@@ -1,23 +1,26 @@
 package client.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
+
+import common.protocol.Contact;
 
 public class ClientModel extends Observable {
 	
-	private enum Status {SIGNEDIN, SIGNEDOUT, SIGNINGIN};
+	public static enum Status {SIGNEDIN, SIGNEDOUT, SIGNINGIN};
 	
-	private String signedInUser;
-	private String errorMsg;
+	private Contact signedInUser;
 	private List<String> userList;
+	private Map<String, Contact> userListWithChat;
 	private Status status;
 	
 	public ClientModel () {
-		this.signedInUser = "";
 		this.status = Status.SIGNEDOUT;
-		this.errorMsg = "";
 		this.userList = new ArrayList<String>();
+		this.userListWithChat = new HashMap<String, Contact>();
 	}
 	
 	public boolean isSignedIn() {
@@ -36,7 +39,7 @@ public class ClientModel extends Observable {
 		if (!this.status.equals(Status.SIGNEDIN)) {
 			this.status = Status.SIGNEDIN;
 			setChanged();
-			notifyObservers();
+			notifyObservers(Status.SIGNEDIN);
 		}
 	}
 	
@@ -44,7 +47,7 @@ public class ClientModel extends Observable {
 		if (!this.status.equals(Status.SIGNINGIN)) {
 			this.status = Status.SIGNINGIN;
 			setChanged();
-			notifyObservers();
+			notifyObservers(Status.SIGNINGIN);
 		}
 	}
 	
@@ -52,28 +55,13 @@ public class ClientModel extends Observable {
 		if (!this.status.equals(Status.SIGNEDOUT)) {
 			this.status = Status.SIGNEDOUT;
 			setChanged();
-			notifyObservers();
+			notifyObservers(Status.SIGNEDOUT);
 		}
-	}
-	
-	public String getErrorMsg() {
-		return errorMsg;
 	}
 
 	public void setErrorMsg(String errorMsg) {
-		if (!this.errorMsg.equals(errorMsg)) {
-			this.errorMsg = errorMsg;
-			setChanged();
-			notifyObservers();
-		}
-	}
-	
-	public void clearErrorMsg() {
-		this.errorMsg = "";
-	}
-	
-	public boolean hasError() {
-		return errorMsg == null || this.errorMsg.length() > 0;
+		setChanged();
+		notifyObservers(errorMsg);
 	}
 	
 	public List<String> getUserList() {
@@ -84,14 +72,26 @@ public class ClientModel extends Observable {
 		//TODO validate the list
 		this.userList.addAll(userList);
 		setChanged();
-		notifyObservers();
+		notifyObservers(this.userList);
+	}
+	
+	public Contact getUserWithChat(String userName) {
+		return userListWithChat.get(userName);
 	}
 
-	public String getSignedInUser() {
+	public void addToUserListWithChat(Contact contact) {
+		this.userListWithChat.put(contact.getName(), contact);
+	}
+	
+	public void removeFromUserLisWithChat(String userName) {
+		this.userListWithChat.remove(userName);
+	}
+
+	public Contact getSignedInUser() {
 		return signedInUser;
 	}
 
-	public void setSignedInUser(String signedInUser) {
+	public void setSignedInUser(Contact signedInUser) {
 		this.signedInUser = signedInUser;
 	}
 }

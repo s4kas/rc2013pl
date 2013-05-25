@@ -5,12 +5,16 @@
 package client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import common.ConnectionHandler;
 import common.protocol.*;
 import common.ui.DebugFrame;
 import common.ui.UIConstants;
+import client.ui.ChatFrame;
+import client.ui.ChatModel;
 import client.ui.ClientMainFrame;
 import client.ui.ClientModel;
 
@@ -21,8 +25,8 @@ import client.ui.ClientModel;
 public class Client {
 	
 	private static final int CLIENT_SERVER_TIMEOUT = 10000; //10 sec.
-	
-	private static ClientMainFrame mainFrame;
+
+	private static Map<String, ChatModel> listOfOpenChatModels;
 	private static ClientModel clientModel;
 	private static DebugFrame debugFrame;
 	private static IProtocol protocol;
@@ -38,6 +42,9 @@ public class Client {
         
         //start a connection to process incoming messages
         startConnection();
+        
+        //instantiate a new Map to control the open chat windows
+        listOfOpenChatModels = new HashMap<String, ChatModel>();
 	}
     
     private static void log(String msg) {
@@ -46,7 +53,7 @@ public class Client {
 	
 	private static void createAndShowUI() {
 		//Create and set up the Main window.
-		mainFrame = new ClientMainFrame();
+		ClientMainFrame mainFrame = new ClientMainFrame();
 		
 		//create the client model and
 		//register the mainFrame as observer
@@ -60,7 +67,9 @@ public class Client {
 	}
 	
 	public static void signIn(String username) {
-		//update the UI
+		//update the Model
+		clientModel.setSignedInUser(new Contact(username, true, 
+				"localhost", conn.getPort(), new ArrayList<String>()));
 		clientModel.setSigningIn();
 		
 		//Timeout if sign in unsuccessful
@@ -69,14 +78,44 @@ public class Client {
 			public void run() {
 				if (clientModel.isSigningIn()) {
 					clientModel.setErrorMsg(UIConstants.CLIENT_FAILED_CONNECT);
-					clientModel.clearErrorMsg();
 					clientModel.setSignedOut();
 				}
 			}
 		}, CLIENT_SERVER_TIMEOUT);
 		
 		//send a register to the server
-		sendRegister(username);
+		sendRegister();
+	}
+	
+	public static void startChat(int userListIndex) {
+		String user2Talk = clientModel.getUserList().get(userListIndex);
+		
+		//open new chat
+		ChatModel chatModel = listOfOpenChatModels.get(user2Talk);
+    	if (chatModel == null) {
+    		chatModel = new ChatModel();
+    		chatModel.addObserver(new ChatFrame(user2Talk));
+    		listOfOpenChatModels.put(user2Talk, chatModel);
+    		sendStartMessage(user2Talk);
+    	} else {
+    		chatModel.setFocus();
+    	}
+	}
+	
+	public static void startMessage(String user2Talk, String message) {
+		//Update Model
+    	ChatModel chatModel = listOfOpenChatModels.get(user2Talk);
+    	chatModel.setMessage(new String[] {clientModel.getSignedInUser().getName(),
+    		message});
+    	
+    	//get the contact for this user
+    	Contact contact = clientModel.getUserWithChat(user2Talk);
+    	if (contact == null) { //no connection established to the user
+    		sendStartMessage(user2Talk);
+    	} else { //direct connection to user
+    		sendMessage(contact, message);
+    	}
+    	
 	}
 	
 	private static void startConnection() {
@@ -91,35 +130,33 @@ public class Client {
         new Thread(conn).start();
     }
 
-    public static void sendRegister(String username) {
-    	clientModel.setSignedInUser(username);
-    	
+    private static void sendRegister() {
         ConnectionHandler connSend = new ConnectionHandler("localhost",
                 protocol.getServerPort(), false);
 		
-        Message msg = new CSRegister(new Contact(username, true,
-                "localhost", conn.getPort(), new ArrayList<String>()));
+        Message msg = new CSRegister(clientModel.getSignedInUser());
         connSend.setObject(msg);
         
         new Thread(connSend).start();
     }
     
-    public static void sendStartMessage(int userListIndex) {
-    	String user2Talk = clientModel.getUserList().get(userListIndex);
-    	
+    private static void sendStartMessage(String user2Talk) {
     	ConnectionHandler connSend = new ConnectionHandler("localhost",
                 protocol.getServerPort(), false);
 		
-        Message msg = new CSStartMessage(new Contact(clientModel.getSignedInUser(), 
-        		true, "localhost", conn.getPort(), new ArrayList<String>()), user2Talk);
+        Message msg = new CSStartMessage(clientModel.getSignedInUser(), user2Talk);
         connSend.setObject(msg);
         
         new Thread(connSend).start();
     }
+    
+    private static void sendMessage(Contact contact, String message) {
+    	//TODO Send the message to the user
+    }
 
     public static boolean processRegister(SCRegister msg) {
-    	clientModel.setSignedIn();
     	clientModel.setUserList(msg.getUsersList());
+    	clientModel.setSignedIn();
         return true;
     }    
     //TODO: change object to the proper message

@@ -1,13 +1,11 @@
 package client.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -38,39 +36,21 @@ public class ClientMainFrame extends JFrame implements Observer {
 	private DefaultListModel<String> listModel;
 	private ClientActionListener clientActionListener;
 	
-	@Override
-	public void update(Observable o, Object arg) {
-		ClientModel clientModel = (ClientModel)o;
+	public ClientMainFrame() {
+		//start the action listener
+		clientActionListener = new ClientActionListener(this);
 		
-		//update userList
-		List<String> clientModelUserList = clientModel.getUserList();
+		//start the lists
 		listModel = new DefaultListModel<String>();
-		for (String user : clientModelUserList) {
-			listModel.addElement(user);
-		}
 		userList = new JList<String>(listModel);
 		userList.addMouseListener(clientActionListener);
 		
-		//update status
-		if (clientModel.isSigningIn()) {
-			signInUser.setEnabled(false);
-			signInButton.setEnabled(false);
-			signInLabel.setText(UIConstants.SIGNING_IN_LABEL);
-		} else if (clientModel.isSignedIn()) {
-			mainPanel.removeAll();
-			loadUserListPanel();
-			mainPanel.validate();
-			mainPanel.repaint();
-		} else {
-			signInUser.setEnabled(true);
-			signInButton.setEnabled(true);
-			signInLabel.setText(UIConstants.SIGN_IN_LABEL);
-		}
-		
-		//set error msg ?
-		if (clientModel.hasError()) {
-			showError(clientModel.getErrorMsg());
-		}
+		setTitle(UIConstants.CLIENT_MAIN_TITLE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		loadSignInPanel();
+		pack();
+		setLocationRelativeTo(null);
+		setVisible(true);
 	}
 	
 	public JButton getSignInButton() {
@@ -85,16 +65,43 @@ public class ClientMainFrame extends JFrame implements Observer {
 		return userList;
 	}
 	
-	public ClientMainFrame() {
-		//start the action listener
-		clientActionListener = new ClientActionListener(this);
-		
-		setTitle(UIConstants.CLIENT_MAIN_TITLE);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		loadSignInPanel();
-		pack();
-		setLocationRelativeTo(null);
-		setVisible(true);
+	@Override
+	public void update(Observable o, Object arg) {
+		if (arg instanceof List) { //update userList
+			
+			List<String> clientModelUserList = (List<String>)arg;
+			listModel.removeAllElements();
+			for (String user : clientModelUserList) {
+				listModel.addElement(user);
+			}
+			userList.setModel(listModel);
+			
+		} else if (arg instanceof ClientModel.Status) { //update status
+			
+			ClientModel.Status status = (ClientModel.Status)arg;
+			switch(status) {
+				case SIGNINGIN:
+					signInUser.setEnabled(false);
+					signInButton.setEnabled(false);
+					signInLabel.setText(UIConstants.SIGNING_IN_LABEL);
+					break;
+				case SIGNEDIN:
+					mainPanel.removeAll();
+					loadUserListPanel();
+					mainPanel.validate();
+					mainPanel.repaint();
+					break;
+				case SIGNEDOUT:
+					signInUser.setEnabled(true);
+					signInButton.setEnabled(true);
+					signInLabel.setText(UIConstants.SIGN_IN_LABEL);
+					break;
+			}
+			
+		} else if (arg instanceof String) { //update error msg
+			String errorMsg = (String)arg;
+			showError(errorMsg);
+		}
 	}
 	
 	private void loadSignInPanel() {	
