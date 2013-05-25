@@ -82,6 +82,10 @@ public class ConnectionHandler extends Observable implements Runnable {
         }
     }
 
+    public String getHost() {
+        return host;
+    }
+
     private void startClientSocket() throws UnknownHostException, IOException {
         // Create socket connected to output stream.
         Socket socket = new Socket(host, port);

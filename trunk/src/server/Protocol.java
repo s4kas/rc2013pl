@@ -11,13 +11,13 @@ public class Protocol extends IProtocol {
         Message msg = (Message) arg;
         switch (msg.getMessageType()) {
             case CSRegister:
-                Server.processRegister((CSRegister) arg,"",6666 );
+                Server.processRegister((CSRegister) arg);
                 break;
             case CSStartMessage:
-                Server.processStartMessage((CSStartMessage)arg,"",6666);
+                Server.processStartMessage((CSStartMessage)arg);
                 break;
             case CSUpdateInfo:
-                Server.processUpdateInfo(arg,"",6666);
+                Server.processUpdateInfo((CSUpdateInfo)arg);
                 break;
             default:
                 System.out.println("Nao sei quem es");

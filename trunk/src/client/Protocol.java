@@ -14,13 +14,13 @@ public class Protocol extends IProtocol {
                 Client.processRegister((SCRegister) arg);
                 break;
             case SCStartMessage:
-                Client.processStartMessage(arg);
+                Client.processStartMessage((SCStartMessage) arg);
                 break;
             case SCUpdateInfo:
-                Client.processUpdateInfo(arg);
+                Client.processUpdateInfo((SCUpdateInfo) arg);
                 break;
             case CCMessage:
-                Client.processMessage(arg);
+                Client.processMessage((CCMessage) arg);
                 break;
             default:
                 System.out.println("Nao sei quem es");
