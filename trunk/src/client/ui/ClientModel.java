@@ -11,6 +11,9 @@ import common.protocol.Contact;
 public class ClientModel extends Observable {
 	
 	public static enum Status {SIGNEDIN, SIGNEDOUT, SIGNINGIN};
+	public static final String ADDED_USERS = "ADDED_USERS";
+	public static final String REMOVED_USERS = "REMOVED_USERS";
+	public static final String ALL_USERS = "ALL_USERS";
 	
 	private Contact signedInUser;
 	private List<String> userList;
@@ -68,11 +71,17 @@ public class ClientModel extends Observable {
 		return userList;
 	}
 	
-	public void setUserList(List<String> userList) {
-		//TODO validate the list
-		this.userList.addAll(userList);
+	public void setUserList(List<String> userList) {	
+		List<String> addedUsers = getAddedUsers(userList);
+		List<String> removedUsers = getRemovedUsers(userList);
+		Map<String, List<String>> usersListMap = new HashMap<String, List<String>>();
+		usersListMap.put(ADDED_USERS, addedUsers);
+		usersListMap.put(REMOVED_USERS, removedUsers);
+		usersListMap.put(ALL_USERS, userList);
+		this.userList = new ArrayList<String>(userList);
+		
 		setChanged();
-		notifyObservers(this.userList);
+		notifyObservers(usersListMap);
 	}
 	
 	public Contact getUserWithChat(String userName) {
@@ -93,5 +102,39 @@ public class ClientModel extends Observable {
 
 	public void setSignedInUser(Contact signedInUser) {
 		this.signedInUser = signedInUser;
+	}
+	
+	private List<String> getRemovedUsers(List<String> allUsers) {
+		List<String> removedUsers = new ArrayList<String>();
+		for (String userFromClient : this.userList) {
+			boolean removedUser = true;
+			for (String userFromServer : allUsers) {
+				if (userFromServer.equals(userFromClient)) {
+					removedUser = false;
+				}
+			}
+			
+			if (removedUser) {
+				removedUsers.add(userFromClient);
+			}
+		}
+		return removedUsers;
+	}
+	
+	private List<String> getAddedUsers(List<String> allUsers) {
+		List<String> addedUsers = new ArrayList<String>();
+		for (String userFromServer : allUsers) {
+			boolean newUser = true;
+			for (String userFromClient : this.userList) {
+				if (userFromServer.equals(userFromClient)) {
+					newUser = false;
+				}
+			}
+			
+			if (newUser) {
+				addedUsers.add(userFromServer);
+			}
+		}
+		return addedUsers;
 	}
 }
