@@ -6,7 +6,7 @@ import java.util.Observer;
 public abstract class IProtocol implements Observer {
 
     private final int SERVER_PORT = 6666;
-    private final String SERVER_HOST = "localhost";
+    private final String SERVER_HOST = "192.168.1.66";
 
     public int getServerPort() {
         return SERVER_PORT;

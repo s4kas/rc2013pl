@@ -5,17 +5,17 @@ import common.ConnectionHandler;
 public class SCUpdateInfo extends Message {
 
     private static final long serialVersionUID = -6625202764248396981L;
-    private String requesterName;
+    private Contact requester;
 
     public SCUpdateInfo(ConnectionHandler conn) {
         super(MessageType.SCUpdateInfo, conn);
     }
 
-    public String getRequesterName() {
-        return requesterName;
+    public Contact getRequester() {
+        return requester;
     }
 
-    public void setRequesterName(String requesterName) {
-        this.requesterName = requesterName;
+    public void setRequester(Contact requester) {
+        this.requester = requester;
     }
 }

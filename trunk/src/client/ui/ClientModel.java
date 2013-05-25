@@ -1,10 +1,10 @@
 package client.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import common.protocol.Contact;
 
@@ -24,7 +24,7 @@ public class ClientModel extends Observable {
 	public ClientModel () {
 		this.status = Status.SIGNEDOUT;
 		this.userList = new ArrayList<String>();
-		this.userListWithChat = new HashMap<String, Contact>();
+		this.userListWithChat = new ConcurrentHashMap<String, Contact>();
 	}
 	
 	public boolean isSignedIn() {
@@ -75,7 +75,7 @@ public class ClientModel extends Observable {
 	public void setUserList(List<String> userList) {	
 		List<String> addedUsers = getAddedUsers(userList);
 		List<String> removedUsers = getRemovedUsers(userList);
-		Map<String, List<String>> usersListMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> usersListMap = new ConcurrentHashMap<String, List<String>>();
 		usersListMap.put(ADDED_USERS, addedUsers);
 		usersListMap.put(REMOVED_USERS, removedUsers);
 		usersListMap.put(ALL_USERS, userList);

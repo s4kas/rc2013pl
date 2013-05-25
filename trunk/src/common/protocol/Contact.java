@@ -5,6 +5,7 @@
 package common.protocol;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +20,15 @@ public class Contact implements Serializable {
     private String host;
     private int port;
     private List<String> capacity;
-
+    
+    public Contact(Contact c) {
+    	this.name = c.name;
+    	this.isConnected = c.isConnected;
+    	this.host = c.host;
+    	this.port = c.port;
+    	this.capacity = new ArrayList<String>(c.getCapacity());
+    }
+    
     public Contact(String name, boolean isConnected,
             String host, int port, List<String> capacity) {
         this.name = name;

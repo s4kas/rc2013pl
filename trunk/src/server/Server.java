@@ -6,7 +6,6 @@ package server;
 
 import common.ConnectionHandler;
 import common.protocol.*;
-import common.ui.DebugFrame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import server.ui.ServerMainFrame;
@@ -20,7 +19,6 @@ public class Server {
 
     private static ServerMainFrame mainFrame;
     private static ServerModel serverModel;
-    private static DebugFrame debugFrame;
     private static IProtocol protocol;
     private static ConnectionHandler conn;
     private static HashMap<String, Contact> users = new HashMap<>();
@@ -55,7 +53,7 @@ public class Server {
         //a protocol to process incoming messages
         //instantiate a new connection handler
         protocol = new Protocol();
-        conn = new ConnectionHandler(null, protocol.getServerPort(), true);
+        conn = new ConnectionHandler(protocol.getServerHost(), protocol.getServerPort(), true);
         conn.addObserver(protocol);
 
         //a thread to listen for incoming messages
@@ -79,20 +77,19 @@ public class Server {
     public static boolean processStartMessage(CSStartMessage msg) {
         // get contact from users
         Contact destinationUser = users.get(msg.getUser2Talk());
-        // Create message to check if user is connected
-        SCUpdateInfo request = new SCUpdateInfo(conn);
-        request.setRequesterName(destinationUser.getName());
-
         if (destinationUser == null) {
             return false;
-        } else {
-            protocol.sendMessage(request, destinationUser.getHost(), destinationUser.getPort());
-            return true;
         }
+        // Create message to check if user is connected
+        SCUpdateInfo request = new SCUpdateInfo(conn);
+        request.setRequester(msg.getUser());
+
+        protocol.sendMessage(request, destinationUser.getHost(), destinationUser.getPort());
+        return true;
     }
 
     public static boolean processUpdateInfo(CSUpdateInfo msg) {
-        Contact requesterContact = users.get(msg.getRequesterName());
+        Contact requesterContact = users.get(msg.getRequester().getName());
         SCStartMessage response = new SCStartMessage(msg.getUser(), conn);
         protocol.sendMessage(response, requesterContact.getHost(), requesterContact.getPort());
         return true;
