@@ -1,7 +1,6 @@
 package common.protocol;
 
 import java.io.File;
-import java.io.FileOutputStream;
 
 public class CCMessage extends Message {
 	

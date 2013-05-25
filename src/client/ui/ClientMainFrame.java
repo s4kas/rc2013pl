@@ -1,9 +1,12 @@
 package client.ui;
 
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.TrayIcon;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
@@ -35,6 +38,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 	private JList<String> userList;
 	private DefaultListModel<String> listModel;
 	private ClientActionListener clientActionListener;
+	private TrayIcon trayIcon;
 	
 	public ClientMainFrame() {
 		//start the action listener
@@ -44,6 +48,13 @@ public class ClientMainFrame extends JFrame implements Observer {
 		listModel = new DefaultListModel<String>();
 		userList = new JList<String>(listModel);
 		userList.addMouseListener(clientActionListener);
+		
+		//TrayIcon for notifications
+		trayIcon = new java.awt.TrayIcon(
+				java.awt.Toolkit.getDefaultToolkit().getImage(""));
+		try {
+			java.awt.SystemTray.getSystemTray().add(trayIcon);
+		} catch (AWTException e) {}
 		
 		setTitle(UIConstants.CLIENT_MAIN_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -67,41 +78,30 @@ public class ClientMainFrame extends JFrame implements Observer {
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		if (arg instanceof List) { //update userList
+		
+		if (arg instanceof Map) { //update userList
 			
-			List<String> clientModelUserList = (List<String>)arg;
-			listModel.removeAllElements();
-			for (String user : clientModelUserList) {
-				listModel.addElement(user);
-			}
-			userList.setModel(listModel);
+			//Update list of users
+			Map<String, List<String>> usersMap = (Map<String, List<String>>)arg;
+			List<String> allUsers = usersMap.get(ClientModel.ALL_USERS);
+			updateListOfUsers(allUsers);
+			
+			List<String> addedUsers = usersMap.get(ClientModel.ADDED_USERS);
+			List<String> removedUsers = usersMap.get(ClientModel.REMOVED_USERS);
+			showNotification(addedUsers, removedUsers);
 			
 		} else if (arg instanceof ClientModel.Status) { //update status
 			
 			ClientModel.Status status = (ClientModel.Status)arg;
-			switch(status) {
-				case SIGNINGIN:
-					signInUser.setEnabled(false);
-					signInButton.setEnabled(false);
-					signInLabel.setText(UIConstants.SIGNING_IN_LABEL);
-					break;
-				case SIGNEDIN:
-					mainPanel.removeAll();
-					loadUserListPanel();
-					mainPanel.validate();
-					mainPanel.repaint();
-					break;
-				case SIGNEDOUT:
-					signInUser.setEnabled(true);
-					signInButton.setEnabled(true);
-					signInLabel.setText(UIConstants.SIGN_IN_LABEL);
-					break;
-			}
+			updateClientStatus(status);
 			
 		} else if (arg instanceof String) { //update error msg
+			
 			String errorMsg = (String)arg;
 			showError(errorMsg);
+			
 		}
+		
 	}
 	
 	private void loadSignInPanel() {	
@@ -146,6 +146,57 @@ public class ClientMainFrame extends JFrame implements Observer {
 				JLabel.CENTER);
 		mainPanel.add(mainPanelScroll);
 		mainPanel.add(usersSizeLabel);
+	}
+	
+	private void updateListOfUsers(List<String> allUsers) {
+		listModel.removeAllElements();
+		for (String user : allUsers) {
+			listModel.addElement(user);
+		}
+	}
+	
+	private void updateClientStatus(ClientModel.Status status) {
+		
+		switch(status) {
+			case SIGNINGIN:
+				signInUser.setEnabled(false);
+				signInButton.setEnabled(false);
+				signInLabel.setText(UIConstants.SIGNING_IN_LABEL);
+				break;
+			case SIGNEDIN:
+				mainPanel.removeAll();
+				loadUserListPanel();
+				mainPanel.validate();
+				mainPanel.repaint();
+				break;
+			case SIGNEDOUT:
+				signInUser.setEnabled(true);
+				signInButton.setEnabled(true);
+				signInLabel.setText(UIConstants.SIGN_IN_LABEL);
+				break;
+		}
+	}
+	
+	private void showNotification(List<String> addedUsers, List<String> removedUsers) {
+		//Added Users notification
+		if (!addedUsers.isEmpty()) {	
+			StringBuffer message = new StringBuffer();
+			for (String addedUser : addedUsers) {
+				message.append(addedUser + "\n");
+			}
+			trayIcon.displayMessage("Users signing in!", String.valueOf(message), 
+					TrayIcon.MessageType.INFO);
+		}
+		
+		//Removed Users notification
+		if (!removedUsers.isEmpty()) {
+			StringBuffer message = new StringBuffer();
+			for (String removedUser : removedUsers) {
+				message.append(removedUser + "\n");
+			}
+			trayIcon.displayMessage("Users signing out!", String.valueOf(message), 
+					TrayIcon.MessageType.INFO);
+		}
 	}
 	
 	private void showError(String errorMsg) {
