@@ -46,10 +46,6 @@ public class Client {
         //instantiate a new Map to control the open chat windows
         listOfOpenChatModels = new HashMap<String, ChatModel>();
 	}
-    
-    private static void log(String msg) {
-        debugFrame.log("Client: " + msg);
-    }
 	
 	private static void createAndShowUI() {
 		//Create and set up the Main window.

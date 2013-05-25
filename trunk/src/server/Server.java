@@ -34,10 +34,6 @@ public class Server {
         });
     }
 
-    private static void log(String msg) {
-        debugFrame.log("Server: " + msg);
-    }
-
     private static void createAndShowUI() {
         //Create and set up the Main window.
         mainFrame = new ServerMainFrame();
