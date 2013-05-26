@@ -20,11 +20,11 @@ public class SCUpdateInfo extends Message {
         this.requester = requester;
     }
 
-	public String getDestUser() {
-		return destUser;
-	}
+    public String getDestUser() {
+        return destUser;
+    }
 
-	public void setDestUser(String destUser) {
-		this.destUser = destUser;
-	}
+    public void setDestUser(String destUser) {
+        this.destUser = destUser;
+    }
 }

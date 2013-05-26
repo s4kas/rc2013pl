@@ -7,13 +7,13 @@ import common.protocol.SCUpdateInfo;
 
 public class ServerErrorStrategy implements IErrorTreatingStrategy {
 
-	@Override
-	public void dealWithException(Message message, String exceptionType) {
-		switch(exceptionType) {
-			case "SCUpdateInfo":
-				SCUpdateInfo SCmsg = (SCUpdateInfo) message;
-				Server.processExceptionSCUpdateInfo(SCmsg);
-				break;
-		}
-	}
+    @Override
+    public void dealWithException(Message message, String exceptionType) {
+        switch (exceptionType) {
+            case "SCUpdateInfo":
+                SCUpdateInfo SCmsg = (SCUpdateInfo) message;
+                Server.processExceptionSCUpdateInfo(SCmsg);
+                break;
+        }
+    }
 }

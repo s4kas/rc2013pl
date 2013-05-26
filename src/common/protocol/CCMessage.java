@@ -9,8 +9,8 @@ public class CCMessage extends Message {
     private String destinationName;
     private ICapability capabilityContent;
 
-    public CCMessage(ICapability capabilityContent, 
-            ConnectionHandler conn, String senderName, String destinationName ) {
+    public CCMessage(ICapability capabilityContent,
+            ConnectionHandler conn, String senderName, String destinationName) {
         super(MessageType.CCMessage, conn);
         this.destinationName = destinationName;
         this.senderName = senderName;
@@ -28,5 +28,4 @@ public class CCMessage extends Message {
     public String getDestinationName() {
         return destinationName;
     }
-    
 }
