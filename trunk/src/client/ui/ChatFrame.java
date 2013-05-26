@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
@@ -62,6 +63,9 @@ public class ChatFrame extends JFrame implements Observer {
 		chatActionListener = new ChatActionListener(this);
 		//start the filechooser
 		fileChooser = new JFileChooser();
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "PNG Images", "png");
+		fileChooser.setFileFilter(filter);
 		
 		setTitle(user);
 		loadMainPanel();
