@@ -30,16 +30,10 @@ public class Client {
     private static ClientModel clientModel;
     private static IProtocol protocol;
     private static ConnectionHandler conn;
+    private static Timer sendRegisterTimer;
 
     public static void main(String[] args) {
-    	//instantiate a new Map to control the open chat windows
-        listOfOpenChatModels = new ConcurrentHashMap<String, ChatModel>();
-
-        //create the client model
-        clientModel = new ClientModel();
-        
-        //Protocol
-        protocol = new Protocol();
+    	prepareClient();
     	
         //start the UI
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -50,6 +44,17 @@ public class Client {
 
         //start a connection to process incoming messages
         startConnection();
+    }
+    
+    private static void prepareClient() {
+    	//instantiate a new Map to control the open chat windows
+        listOfOpenChatModels = new ConcurrentHashMap<String, ChatModel>();
+
+        //create the client model
+        clientModel = new ClientModel();
+        
+        //Protocol
+        protocol = new Protocol();
     }
 
     private static void createAndShowUI() {
@@ -67,9 +72,8 @@ public class Client {
 
     public static void signIn(String username) {
         //update the Model
-    	String localAddress = protocol.getCurrentHost();
         clientModel.setSignedInUser(new Contact(username, true,
-        		localAddress , conn.getPort(), new ArrayList<String>()));
+        		conn.getHost() , conn.getPort(), new ArrayList<String>()));
         clientModel.setSigningIn();
 
         //Timeout if sign in unsuccessful
@@ -84,14 +88,27 @@ public class Client {
         }, CLIENT_SERVER_TIMEOUT);
         
         // send a register every 1 min to update user list
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        sendRegisterTimer = new Timer();
+        sendRegisterTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 //send a register to the server
                 sendRegister();
             }
         }, 0, 1 * 10 * 1000);
-
+    }
+    
+    public static void logOut() {
+    	//stop
+    	sendRegisterTimer.cancel();
+    	sendRegisterTimer.purge();
+    	conn.stopServer();
+    	//update model
+    	clientModel.setSignedOut();
+    	
+    	//start
+    	prepareClient();
+    	startConnection();
     }
     
     public static void saveFile(String chatUser, int fileIndex, File file) {
@@ -161,7 +178,7 @@ public class Client {
 
     private static void startConnection() {
         //Instantiate a new connection
-        conn = new ConnectionHandler(null, 0, true);
+        conn = new ConnectionHandler(protocol.getCurrentHost(), 0, true);
 
         //Protocol is listening to process incoming messages
         conn.addObserver(protocol);
