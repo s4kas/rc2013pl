@@ -2,6 +2,8 @@ package client.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
@@ -42,185 +44,196 @@ public class ChatFrame extends JFrame implements Observer {
     private HTMLEditorKit kit;
     private HTMLDocument doc;
     private ChatActionListener chatActionListener;
-
+    
+    public JButton getSendText() {
+        return sendText;
+    }
+    
     public JButton getSendFoto() {
         return sendFoto;
     }
 
-    public JButton getSendText() {
-        return sendText;
-    }
-
-    public JTextArea getSendTextArea() {
-        return sendTextArea;
-    }
-
-    public JFileChooser getFileChooser() {
-        return fileChooser;
-    }
-
-    public ChatFrame(String user) {
-        //start the action listener
-        chatActionListener = new ChatActionListener(this);
-        //start the filechooser
-        fileChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "PNG Images", "png");
-        fileChooser.setFileFilter(filter);
-
-        setTitle(user);
-        loadMainPanel();
-        loadChatArea();
-        loadFooter();
-        pack();
-        sendTextArea.requestFocus();
-        setLocationRelativeTo(null);
-        setVisible(true);
-        toFront();
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-        if (arg instanceof Object[]) {
-
-            Object[] message = (Object[]) arg;
-            try {
-                if (message[1] instanceof String) {
-                    updateChatTextContents(message);
-                } else if (message[1] instanceof byte[]) {
-                    updateChatImageContents(message, ((ChatModel) o).getLastAddedIndex());
-                }
-            } catch (BadLocationException | IOException e) {
-            }
-
-        } else if (arg instanceof List) {
-
-            @SuppressWarnings("unchecked")
-            List<String> capabilitys = (List<String>) arg;
-            updateCapabilitys(capabilitys);
-
-        } else if (arg instanceof String) {
-
-            String errorMsg = String.valueOf(arg);
-            try {
-                showErrorMsg(errorMsg);
-            } catch (BadLocationException | IOException e) {
-            }
-
-        }
-
-        setVisible(true);
-        toFront();
-    }
-
-    private void showErrorMsg(String errorMsg) throws BadLocationException, IOException {
-        String error = "";
-        if (errorMsg.equals(ChatModel.CCMESSAGE_ERROR)) {
-            error = UIConstants.CCMESSAGE_ERROR;
-        } else if (errorMsg.equals(ChatModel.CSSTART_ERROR)) {
-            error = UIConstants.CSSTART_ERROR;
-        }
-        kit.insertHTML(doc, doc.getLength(), "<font color=\""
-                + "red" + "\">" + error
-                + "</font>", 0, 0, null);
-    }
-
-    private void updateCapabilitys(List<String> capabilitys) {
-        boolean sendFotoInd = false;
-        for (String cap : capabilitys) {
-            if (cap.equals(ICapability.PNG)) {
-                sendFotoInd = true;
-            }
-        }
-        if (sendFotoInd) {
-            sendFoto.setEnabled(true);
-        } else {
-            sendFoto.setEnabled(false);
-        }
-    }
-
-    private void updateChatTextContents(Object[] message) throws BadLocationException, IOException {
-        String text = "<b>" + message[0] + ": </b>"
-                + String.valueOf(message[1]) + "</br>";
-        kit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
-        sendTextArea.setText(null);
-        sendTextArea.setCaretPosition(0);
-    }
-
-    private void updateChatImageContents(Object[] message, int fileIndex) throws BadLocationException, IOException {
-        String htmlImage = "";
-        if (message[0].equals(getTitle())) {
-            htmlImage = "<a href=\""
-                    + fileIndex + "\"><img src=\""
-                    + FileUtils.getDefaultIconURL().toString()
-                    + "\"/></a>";
-        } else {
-            htmlImage = "<img src=\""
-                    + FileUtils.getDefaultIconURL().toString()
-                    + "\"/>";
-        }
-        String image = "<b>" + message[0] + ": </b>"
-                + htmlImage + "</br>";
-
-        kit.insertHTML(doc, doc.getLength(), image, 0, 0, null);
-    }
-
-    private void loadMainPanel() {
-        mainPanel = new JPanel();
-        mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setPreferredSize(new Dimension(MAINPANEL_WIDTH, MAINPANEL_HEIGHT));
-
-        add(mainPanel);
-    }
-
-    private void loadChatArea() {
-        //chat contents
-        chatTextPane = new JTextPane();
-        chatTextPane.setEditable(false);
-        kit = new HTMLEditorKit();
-        doc = new HTMLDocument();
-        chatTextPane.setEditorKit(kit);
-        chatTextPane.setDocument(doc);
-        chatTextPane.addHyperlinkListener(chatActionListener);
-
-        //main panel scroll
-        mainPanelScroll = new JScrollPane(chatTextPane);
-        mainPanelScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        mainPanelScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        mainPanelScroll.setPreferredSize(new Dimension(CHAT_AREA_WIDTH, CHAT_AREA_HEIGHT));
-
-        mainPanel.add(mainPanelScroll);
-    }
-
-    private void loadFooter() {
-        footerPanel = new JPanel();
-        footerPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.X_AXIS));
-        footerPanel.setPreferredSize(new Dimension(FOOTER_WIDTH, FOOTER_HEIGHT));
-        footerPanel.add(Box.createHorizontalStrut(10));
-
-        sendTextArea = new JTextArea();
-        sendTextArea.setEditable(true);
-        sendTextArea.setLineWrap(true);
-        sendTextArea.setPreferredSize(new Dimension(FOOTER_WIDTH, (FOOTER_HEIGHT - 10)));
-        sendTextScroll = new JScrollPane(sendTextArea);
-        sendTextScroll.setMinimumSize(new Dimension((FOOTER_WIDTH / 2), FOOTER_HEIGHT));
-        footerPanel.add(sendTextScroll);
-        footerPanel.add(Box.createHorizontalStrut(10));
-
-        sendText = new JButton(UIConstants.CHAT_SEND_TEXT);
-        sendText.setMinimumSize(new Dimension((FOOTER_WIDTH / 4), FOOTER_HEIGHT));
-        sendText.addActionListener(chatActionListener);
-        footerPanel.add(sendText);
-        footerPanel.add(Box.createHorizontalStrut(10));
-        sendFoto = new JButton(UIConstants.CHAT_SEND_FOTO);
-        sendFoto.setMinimumSize(new Dimension((FOOTER_WIDTH / 4), FOOTER_HEIGHT));
-        sendFoto.addActionListener(chatActionListener);
-        sendFoto.setEnabled(false);
-        footerPanel.add(sendFoto);
-        footerPanel.add(Box.createHorizontalStrut(10));
-
-        mainPanel.add(footerPanel);
-    }
+	public JTextArea getSendTextArea() {
+		return sendTextArea;
+	}
+	
+	public JFileChooser getFileChooser() {
+		return fileChooser;
+	}
+	
+	public ChatFrame(String user) {
+		//start the action listener
+		chatActionListener = new ChatActionListener(this);
+		//start the filechooser
+		fileChooser = new JFileChooser();
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "PNG Images", "png");
+		fileChooser.setFileFilter(filter);
+		
+		setTitle(user);
+		loadMainPanel();
+		loadChatArea();
+		loadFooter();
+		pack();
+		sendTextArea.requestFocus();
+		setLocationRelativeTo(null);
+		setVisible(true);
+		toFront();
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		if (arg instanceof Object[]) {
+			
+			Object[] message = (Object[])arg;
+			try {
+				if (message[1] instanceof String) {
+					updateChatTextContents(message);
+				} else if (message[1] instanceof byte[]) {
+					updateChatImageContents(message, ((ChatModel)o).getLastAddedIndex());
+				}
+			} catch (BadLocationException | IOException e) {}
+				
+		} else if (arg instanceof List) {
+			
+			@SuppressWarnings("unchecked")
+			List<String> capabilitys = (List<String>)arg;
+			updateCapabilitys(capabilitys);
+			
+		} else if (arg instanceof String) {
+			
+			String errorMsg = String.valueOf(arg);
+			try {
+				showErrorMsg(errorMsg);
+			} catch (BadLocationException | IOException e) {}
+			
+		}
+		
+		setVisible(true);
+		toFront();
+		
+		if (arg instanceof Boolean) {
+			
+			Boolean close = (Boolean)arg;
+			if (close) {
+				pullThePlug();
+			}
+		}
+	}
+	
+	private void pullThePlug() {
+		WindowEvent wev = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
+        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
+	}
+	
+	private void showErrorMsg(String errorMsg) throws BadLocationException, IOException {
+		String error = "";
+		if (errorMsg.equals(ChatModel.CCMESSAGE_ERROR)) {
+			error = UIConstants.CCMESSAGE_ERROR;
+		} else if (errorMsg.equals(ChatModel.CSSTART_ERROR)) {
+			error = UIConstants.CSSTART_ERROR;
+		}
+		kit.insertHTML(doc, doc.getLength(),"<font color=\""+
+			"red"+"\">"+ error +
+			"</font>", 0, 0, null);
+	}
+	
+	private void updateCapabilitys(List<String> capabilitys) {
+		boolean sendFotoInd = false;
+		for (String cap : capabilitys) {
+			if (cap.equals(ICapability.PNG)) {
+				sendFotoInd = true;
+			}
+		}
+		if (sendFotoInd) {
+			sendFoto.setEnabled(true);
+		} else {
+			sendFoto.setEnabled(false);
+		}
+	}
+	
+	private void updateChatTextContents(Object[] message) throws BadLocationException, IOException {
+		String text = "<b>"+message[0]+": </b>" + 
+			String.valueOf(message[1]) + "</br>";
+		kit.insertHTML(doc, doc.getLength(),text , 0, 0, null);
+		sendTextArea.setText(null);
+		sendTextArea.setCaretPosition(0);
+	}
+	
+	private void updateChatImageContents(Object[] message, int fileIndex) throws BadLocationException, IOException {
+		String htmlImage = "";
+		if (message[0].equals(getTitle())) {
+			htmlImage = "<a href=\"" +
+					fileIndex + "\"><img src=\""+
+					FileUtils.getDefaultIconURL().toString()
+					+"\"/></a>";
+		} else {
+			htmlImage = "<img src=\""+
+					FileUtils.getDefaultIconURL().toString()
+					+"\"/>";
+		}
+		String image = "<b>"+message[0]+": </b>" + 
+				htmlImage + "</br>";
+		
+		kit.insertHTML(doc, doc.getLength(),image , 0, 0, null);
+	}
+	
+	private void loadMainPanel() {
+		mainPanel = new JPanel();
+		mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		mainPanel.setPreferredSize(new Dimension(MAINPANEL_WIDTH, MAINPANEL_HEIGHT));
+		
+		add(mainPanel);
+	}
+	
+	private void loadChatArea() {
+		//chat contents
+		chatTextPane = new JTextPane();
+		chatTextPane.setEditable(false);
+		kit = new HTMLEditorKit();
+	    doc = new HTMLDocument();
+	    chatTextPane.setEditorKit(kit);
+	    chatTextPane.setDocument(doc);
+	    chatTextPane.addHyperlinkListener(chatActionListener);
+		
+		//main panel scroll
+		mainPanelScroll = new JScrollPane(chatTextPane);
+		mainPanelScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		mainPanelScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		mainPanelScroll.setPreferredSize(new Dimension(CHAT_AREA_WIDTH, CHAT_AREA_HEIGHT));
+		
+		mainPanel.add(mainPanelScroll);
+	}
+	
+	private void loadFooter() {
+		footerPanel = new JPanel();
+		footerPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.X_AXIS));
+		footerPanel.setPreferredSize(new Dimension(FOOTER_WIDTH, FOOTER_HEIGHT));
+		footerPanel.add(Box.createHorizontalStrut(10));
+		
+		sendTextArea = new JTextArea();
+		sendTextArea.setEditable(true);
+		sendTextArea.setLineWrap(true);
+		sendTextArea.setPreferredSize(new Dimension(FOOTER_WIDTH, (FOOTER_HEIGHT - 10)));
+		sendTextScroll = new JScrollPane(sendTextArea);
+		sendTextScroll.setMinimumSize(new Dimension((FOOTER_WIDTH / 2), FOOTER_HEIGHT));
+		footerPanel.add(sendTextScroll);
+		footerPanel.add(Box.createHorizontalStrut(10));
+		
+		sendText = new JButton(UIConstants.CHAT_SEND_TEXT);
+		sendText.setMinimumSize(new Dimension((FOOTER_WIDTH / 4), FOOTER_HEIGHT));
+		sendText.addActionListener(chatActionListener);
+		footerPanel.add(sendText);
+		footerPanel.add(Box.createHorizontalStrut(10));
+		sendFoto = new JButton(UIConstants.CHAT_SEND_FOTO);
+		sendFoto.setMinimumSize(new Dimension((FOOTER_WIDTH / 4), FOOTER_HEIGHT));
+		sendFoto.addActionListener(chatActionListener);
+		sendFoto.setEnabled(false);
+		footerPanel.add(sendFoto);
+		footerPanel.add(Box.createHorizontalStrut(10));
+		
+		mainPanel.add(footerPanel);
+	}
 }
