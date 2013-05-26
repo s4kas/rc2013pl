@@ -59,7 +59,7 @@ public class Server {
         //a protocol to process incoming messages
         //instantiate a new connection handler
         protocol = new Protocol();
-        
+
         conn = new ConnectionHandler(protocol.getCurrentHost(), protocol.getServerPort(), true);
         conn.addObserver(protocol);
 
@@ -78,8 +78,8 @@ public class Server {
         thread.setName("startServer");
         thread.setUncaughtExceptionHandler(exceptionHandler);
         thread.start();
-        
-        
+
+
     }
 
     private static void updateUsers() {
@@ -91,12 +91,12 @@ public class Server {
             // get a java.util.Date from the calendar instance.
             // this date will represent the current instant, or "now".
             Date now = calendar.getTime();
-            
+
             calendar.setTime(user.getLastUpdate());
             calendar.add(Calendar.SECOND, 30);
             Date lastUpdate = calendar.getTime();
-            
-            if (lastUpdate.compareTo(now)<0) {
+
+            if (lastUpdate.compareTo(now) < 0) {
                 users.remove(key);
             }
         }
@@ -138,12 +138,12 @@ public class Server {
         protocol.sendMessage(response, requesterContact.getHost(), requesterContact.getPort());
         return true;
     }
-    
+
     public static void processExceptionSCUpdateInfo(SCUpdateInfo sCmsg) {
-    	CSUpdateInfo response = new CSUpdateInfo(new Contact(sCmsg.getDestUser()), conn);
-		response.setRequester(sCmsg.getRequester());
-		processUpdateInfo(response);
-	}
+        CSUpdateInfo response = new CSUpdateInfo(new Contact(sCmsg.getDestUser()), conn);
+        response.setRequester(sCmsg.getRequester());
+        processUpdateInfo(response);
+    }
 
     private static ArrayList<String> getOnlineUser(String requesterName) {
         ArrayList<String> resultList = new ArrayList<>();

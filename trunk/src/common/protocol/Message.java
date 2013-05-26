@@ -46,5 +46,4 @@ public abstract class Message implements Serializable {
     public int getSenderPort() {
         return senderPort;
     }
-    
 }

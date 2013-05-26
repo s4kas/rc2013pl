@@ -22,16 +22,16 @@ public class Contact implements Serializable {
     private int port;
     private List<String> capacity;
     private Date lastUpdate;
-    
+
     public Contact(Contact c) {
-    	this.name = c.name;
-    	this.isConnected = c.isConnected;
-    	this.host = c.host;
-    	this.port = c.port;
-    	this.capacity = new ArrayList<String>(c.getCapacity());
+        this.name = c.name;
+        this.isConnected = c.isConnected;
+        this.host = c.host;
+        this.port = c.port;
+        this.capacity = new ArrayList<String>(c.getCapacity());
         this.lastUpdate = new Date();
     }
-    
+
     public Contact(String name, boolean isConnected,
             String host, int port, List<String> capacity) {
         this.name = name;
@@ -40,10 +40,10 @@ public class Contact implements Serializable {
         this.port = port;
         this.capacity = capacity;
     }
-    
+
     public Contact(String name) {
-    	this.name = name;
-    	this.isConnected = false;
+        this.name = name;
+        this.isConnected = false;
     }
 
     public String getName() {
@@ -93,5 +93,4 @@ public class Contact implements Serializable {
     public void setLastUpdate(Date lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
-    
 }

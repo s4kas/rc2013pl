@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Observable;
 
 public class Protocol extends IProtocol {
-	
-	private String serverHost;
-	private List<String> capabilitys;
+
+    private String serverHost;
+    private List<String> capabilitys;
 
     @Override
     public void update(Observable o, Object arg) {
@@ -34,32 +34,32 @@ public class Protocol extends IProtocol {
                 break;
         }
     }
-    
+
     public String getServerHost() {
-    	if (serverHost == null) {
-    		serverHost = ClientProps.getServerHost();
-    	}
-    	return serverHost;
+        if (serverHost == null) {
+            serverHost = ClientProps.getServerHost();
+        }
+        return serverHost;
     }
-    
+
     public List<String> getClientCapabilitys() {
-    	if (capabilitys == null) {
-    		capabilitys = ClientProps.getCapabilitys();
-    	}
-    	return capabilitys;
+        if (capabilitys == null) {
+            capabilitys = ClientProps.getCapabilitys();
+        }
+        return capabilitys;
     }
-    
+
     @Override
-	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance() {
-		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
-		exceptionHandler.setCurrentStrategy(new ClientErrorStrategy());
-		return exceptionHandler;
-	}
-    
-	@Override
-	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg) {
-		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler(msg);
-		exceptionHandler.setCurrentStrategy(new ClientErrorStrategy());
-		return exceptionHandler;
-	}
+    public ThreadUncaughtExceptionHandler getExceptionHandlerInstance() {
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        exceptionHandler.setCurrentStrategy(new ClientErrorStrategy());
+        return exceptionHandler;
+    }
+
+    @Override
+    public ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg) {
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler(msg);
+        exceptionHandler.setCurrentStrategy(new ClientErrorStrategy());
+        return exceptionHandler;
+    }
 }

@@ -7,13 +7,13 @@ import common.protocol.Message;
 
 public class ClientErrorStrategy implements IErrorTreatingStrategy {
 
-	@Override
-	public void dealWithException(Message message, String exceptionType) {
-		switch (exceptionType) {
-        case "CCMessage":
-            CCMessage CCmsg = (CCMessage) message;
-            Client.processExceptionCCMessage(CCmsg);
-            break;
-		}
-	}
+    @Override
+    public void dealWithException(Message message, String exceptionType) {
+        switch (exceptionType) {
+            case "CCMessage":
+                CCMessage CCmsg = (CCMessage) message;
+                Client.processExceptionCCMessage(CCmsg);
+                break;
+        }
+    }
 }

@@ -18,28 +18,28 @@ public class Protocol extends IProtocol {
                 Server.processRegister((CSRegister) arg);
                 break;
             case CSStartMessage:
-                Server.processStartMessage((CSStartMessage)arg);
+                Server.processStartMessage((CSStartMessage) arg);
                 break;
             case CSUpdateInfo:
-                Server.processUpdateInfo((CSUpdateInfo)arg);
+                Server.processUpdateInfo((CSUpdateInfo) arg);
                 break;
             default:
                 System.out.println("Nao sei quem es");
                 break;
         }
     }
-    
-    @Override
-	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance() {
-		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
-		exceptionHandler.setCurrentStrategy(new ServerErrorStrategy());
-		return exceptionHandler;
-	}
 
-	@Override
-	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg) {
-		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler(msg);
-		exceptionHandler.setCurrentStrategy(new ServerErrorStrategy());
-		return exceptionHandler;
-	}
+    @Override
+    public ThreadUncaughtExceptionHandler getExceptionHandlerInstance() {
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        exceptionHandler.setCurrentStrategy(new ServerErrorStrategy());
+        return exceptionHandler;
+    }
+
+    @Override
+    public ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg) {
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler(msg);
+        exceptionHandler.setCurrentStrategy(new ServerErrorStrategy());
+        return exceptionHandler;
+    }
 }

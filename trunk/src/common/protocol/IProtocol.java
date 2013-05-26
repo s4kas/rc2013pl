@@ -13,10 +13,10 @@ public abstract class IProtocol implements Observer {
     private String currentHost;
 
     public int getServerPort() {
-    	if (serverPort <= 0) {
-    		serverPort = CommonProps.getServerPort();
-    	}
-    	return serverPort;
+        if (serverPort <= 0) {
+            serverPort = CommonProps.getServerPort();
+        }
+        return serverPort;
     }
 
     public String getCurrentHost() {
@@ -29,17 +29,18 @@ public abstract class IProtocol implements Observer {
         }
         return currentHost;
     }
-    
+
     public abstract ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg);
+
     public abstract ThreadUncaughtExceptionHandler getExceptionHandlerInstance();
-    
+
     public void sendMessage(Message msg, String host, int port) {
         ConnectionHandler connection = new ConnectionHandler(host, port, false);
         connection.setObject(msg);
-        ThreadUncaughtExceptionHandler exceptionHandler = getExceptionHandlerInstance(msg); 
+        ThreadUncaughtExceptionHandler exceptionHandler = getExceptionHandlerInstance(msg);
         Thread thread = new Thread(connection);
         thread.setName(msg.getMessageType().name());
         thread.setUncaughtExceptionHandler(exceptionHandler);
-        thread.start();       
+        thread.start();
     }
 }

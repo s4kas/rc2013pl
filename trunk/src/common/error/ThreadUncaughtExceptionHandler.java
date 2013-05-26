@@ -16,12 +16,11 @@ public class ThreadUncaughtExceptionHandler implements UncaughtExceptionHandler 
     private Message message;
     private IErrorTreatingStrategy currentStrategy;
 
+    public void setCurrentStrategy(IErrorTreatingStrategy currentStrategy) {
+        this.currentStrategy = currentStrategy;
+    }
 
-	public void setCurrentStrategy(IErrorTreatingStrategy currentStrategy) {
-		this.currentStrategy = currentStrategy;
-	}
-
-	public ThreadUncaughtExceptionHandler() {
+    public ThreadUncaughtExceptionHandler() {
     }
 
     public ThreadUncaughtExceptionHandler(Message msg) {
