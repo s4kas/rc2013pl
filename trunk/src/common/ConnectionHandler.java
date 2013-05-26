@@ -34,14 +34,14 @@ public class ConnectionHandler extends Observable implements Runnable {
 
     @Override
     public void run() {
-        try {
+       try {
             if (isServer) {
                 startServerSocket();
             } else {
                 startClientSocket();
             }
         } catch (IOException | ClassNotFoundException e) {
-            System.out.print(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

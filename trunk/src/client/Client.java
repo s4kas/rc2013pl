@@ -58,8 +58,6 @@ public class Client {
         
         //Protocol
         protocol = new Protocol();
-        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
-        protocol.setExceptionHandler(exceptionHandler);
     }
 
     private static void createAndShowUI() {
@@ -86,7 +84,7 @@ public class Client {
     public static void signIn(String username) {
         //update the Model
         clientModel.setSignedInUser(new Contact(username, true,
-        		conn.getHost() , conn.getPort(), protocol.getClientCapabilitys()));
+                conn.getHost(), conn.getPort(), protocol.getClientCapabilitys()));
         clientModel.setSigningIn();
 
         //Timeout if sign in unsuccessful
@@ -202,7 +200,10 @@ public class Client {
         conn.addObserver(protocol);
 
         //Start a thread to listen for connections
-        new Thread(conn).start();
+        Thread thread = new Thread(conn);
+        thread.setName("startConnection");
+        thread.setUncaughtExceptionHandler(new ThreadUncaughtExceptionHandler());
+        thread.start();
     }
 
     private static void sendRegister() {
@@ -210,30 +211,35 @@ public class Client {
                 protocol.getServerPort(), false);
         Message msg = new CSRegister(clientModel.getSignedInUser(), conn);
         connSend.setObject(msg);
-        new Thread(connSend).start();
+        //new Thread(connSend).start();
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        Thread thread = new Thread(connSend);
+        thread.setName("sendRegister");
+        thread.setUncaughtExceptionHandler(exceptionHandler);
+        thread.start();
     }
 
-    private static void sendStartMessage(String user2Talk) {
+    public static void sendStartMessage(String user2Talk) {
         ConnectionHandler connSend = new ConnectionHandler(protocol.getServerHost(),
         		protocol.getServerPort(), false);
         Message msg = new CSStartMessage(clientModel.getSignedInUser(), user2Talk, conn);
         connSend.setObject(msg);
         ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
         Thread thread = new Thread(connSend);
-        thread.setName("startmessage");
+        thread.setName("sendStartMessage");
         thread.setUncaughtExceptionHandler(exceptionHandler);
         thread.start();
     }
     
     private static void sendMessage(Contact contact, byte[] image) {
-    	CCMessage request = new CCMessage(new PngCapability(image), 
-        		conn, clientModel.getSignedInUser().getName());
+        CCMessage request = new CCMessage(new PngCapability(image),
+                conn, clientModel.getSignedInUser().getName(),contact.getName());
         protocol.sendMessage(request, contact.getHost(), contact.getPort());
     }
 
     private static void sendMessage(Contact contact, String message) {
-        CCMessage request = new CCMessage(new TextCapability(message), 
-        		conn, clientModel.getSignedInUser().getName());
+        CCMessage request = new CCMessage(new TextCapability(message),
+                conn, clientModel.getSignedInUser().getName(),contact.getName());
         protocol.sendMessage(request, contact.getHost(), contact.getPort());
     }
 
@@ -244,8 +250,8 @@ public class Client {
     }
 
     public static boolean processStartMessage(SCStartMessage msg) {
-    	ChatModel chatModel = listOfOpenChatModels.get(msg.getUser().getName());
-    	chatModel.updateCapabilitys(msg.getUser().getCapacity());
+        ChatModel chatModel = listOfOpenChatModels.get(msg.getUser().getName());
+        chatModel.updateCapabilitys(msg.getUser().getCapacity());
         clientModel.addToUserListWithChat(msg.getUser());
         return true;
     }
