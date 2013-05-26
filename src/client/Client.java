@@ -5,7 +5,6 @@
 package client;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,7 +28,7 @@ public class Client {
     private static Map<String, ChatModel> listOfOpenChatModels;
     private static ClientModel clientModel;
     private static ClientMainFrame mainFrame;
-    private static IProtocol protocol;
+    private static Protocol protocol;
     private static ConnectionHandler conn;
     private static Timer sendRegisterTimer, signInTimeout;
 
@@ -73,7 +72,7 @@ public class Client {
     public static void signIn(String username) {
         //update the Model
         clientModel.setSignedInUser(new Contact(username, true,
-        		conn.getHost() , conn.getPort(), new ArrayList<String>()));
+        		conn.getHost() , conn.getPort(), protocol.getClientCapabilitys()));
         clientModel.setSigningIn();
 
         //Timeout if sign in unsuccessful
@@ -227,7 +226,8 @@ public class Client {
     }
 
     public static boolean processStartMessage(SCStartMessage msg) {
-        // TODO: this is the settings of the window for msg.user
+    	ChatModel chatModel = listOfOpenChatModels.get(msg.getUser().getName());
+    	chatModel.updateCapabilitys(msg.getUser().getCapacity());
         clientModel.addToUserListWithChat(msg.getUser());
         return true;
     }

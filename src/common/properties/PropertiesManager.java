@@ -8,6 +8,11 @@ import java.util.Properties;
 public class PropertiesManager {
 	
 	private static final String COMMON_PROPS_FILENAME = "common_config.properties";
+	private static final String CLIENT_PROPS_FILENAME = "client_config.properties";
+	
+	public static Properties loadClientProps() {
+		return loadProps(CLIENT_PROPS_FILENAME);
+	}
 	
 	public static Properties loadCommonProps() {
 		return loadProps(COMMON_PROPS_FILENAME);
