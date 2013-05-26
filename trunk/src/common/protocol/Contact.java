@@ -6,6 +6,7 @@ package common.protocol;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -20,6 +21,7 @@ public class Contact implements Serializable {
     private String host;
     private int port;
     private List<String> capacity;
+    private Date lastUpdate;
     
     public Contact(Contact c) {
     	this.name = c.name;
@@ -27,6 +29,7 @@ public class Contact implements Serializable {
     	this.host = c.host;
     	this.port = c.port;
     	this.capacity = new ArrayList<String>(c.getCapacity());
+        this.lastUpdate = new Date();
     }
     
     public Contact(String name, boolean isConnected,
@@ -77,4 +80,13 @@ public class Contact implements Serializable {
     public void setConnected(boolean isConnected) {
         this.isConnected = isConnected;
     }
+
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+    
 }

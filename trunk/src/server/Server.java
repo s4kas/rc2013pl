@@ -7,7 +7,11 @@ package server;
 import common.ConnectionHandler;
 import common.protocol.*;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import server.ui.ServerMainFrame;
 import server.ui.ServerModel;
 
@@ -56,8 +60,37 @@ public class Server {
         conn = new ConnectionHandler(protocol.getCurrentHost(), protocol.getServerPort(), true);
         conn.addObserver(protocol);
 
+        // send a register every 1 min to update user list
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                //send a register to the server
+                updateUsers();
+            }
+        }, 1 * 30 * 1000, 1 * 30 * 1000);
+
         //a thread to listen for incoming messages
         new Thread(conn).start();
+    }
+
+    private static void updateUsers() {
+        for (String key : users.keySet()) {
+            Contact user = users.get(key);
+            // create a java calendar instance
+            Calendar calendar = Calendar.getInstance();
+
+            // get a java.util.Date from the calendar instance.
+            // this date will represent the current instant, or "now".
+            Date now = calendar.getTime();
+            
+            calendar.setTime(user.getLastUpdate());
+            calendar.add(Calendar.MINUTE, 1);
+            Date lastUpdate = calendar.getTime();
+            
+            if (lastUpdate.compareTo(now)<0) {
+                users.remove(key);
+            }
+        }
     }
 
     public static void stopServer() {
@@ -68,6 +101,7 @@ public class Server {
     public static boolean processRegister(CSRegister msg) {
         Contact user = msg.getUser();
         user.setConnected(true);
+        user.setLastUpdate(new Date());
         users.put(user.getName(), user);
         Message response = new SCRegister(getOnlineUser(user.getName()), conn);
         protocol.sendMessage(response, user.getHost(), user.getPort());
