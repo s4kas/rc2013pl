@@ -207,9 +207,9 @@ public class ClientMainFrame extends JFrame implements Observer {
 		//Added Users notification
 		if (!addedUsers.isEmpty()) {	
 			for (String addedUser : addedUsers) {
-				Notification note = new Notification(getNotificationWindow("Users signing In", 
+				Notification note = new Notification(getNotificationWindow(UIConstants.USERS_IN, 
 						addedUser + " is signing in."), 
-						WindowPosition.BOTTOMRIGHT, 75, 75, 2000);
+						WindowPosition.BOTTOMRIGHT, 100, 75, 3000);
 				notifQueue.add(note);
 			}
 		}
@@ -217,9 +217,9 @@ public class ClientMainFrame extends JFrame implements Observer {
 		//Removed Users notification
 		if (!removedUsers.isEmpty()) {
 			for (String removedUser : removedUsers) {
-				Notification note = new Notification(getNotificationWindow("Users signing Out", 
+				Notification note = new Notification(getNotificationWindow(UIConstants.USERS_OUT, 
 						removedUser + " as signed out."), 
-						WindowPosition.BOTTOMRIGHT, 75, 75, 2000);
+						WindowPosition.BOTTOMRIGHT, 100, 75, 3000);
 				notifQueue.add(note);
 			}
 		}
