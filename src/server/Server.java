@@ -5,13 +5,16 @@
 package server;
 
 import common.ConnectionHandler;
+import common.ThreadUncaughtExceptionHandler;
 import common.protocol.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import server.ui.ServerMainFrame;
 import server.ui.ServerModel;
 
@@ -25,7 +28,7 @@ public class Server {
     private static ServerModel serverModel;
     private static IProtocol protocol;
     private static ConnectionHandler conn;
-    private static HashMap<String, Contact> users = new HashMap<>();
+    private static ConcurrentHashMap<String, Contact> users = new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
         //start the UI
@@ -57,6 +60,8 @@ public class Server {
         //a protocol to process incoming messages
         //instantiate a new connection handler
         protocol = new Protocol();
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        protocol.setExceptionHandler(exceptionHandler);
         conn = new ConnectionHandler(protocol.getCurrentHost(), protocol.getServerPort(), true);
         conn.addObserver(protocol);
 
@@ -136,6 +141,7 @@ public class Server {
                 resultList.add(contact.getName());
             }
         }
+        Collections.sort(resultList);
         return resultList;
     }
 }

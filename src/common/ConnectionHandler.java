@@ -52,19 +52,19 @@ public class ConnectionHandler extends Observable implements Runnable {
     public int getPort() {
         return this.port;
     }
-    
+
     public void stopServer() {
-    	try {
-			serverSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void startServerSocket() throws UnknownHostException, IOException, ClassNotFoundException {
         // Create server socket.
         serverSocket = new ServerSocket(port);
-        port = serverSocket.getLocalPort();        
+        port = serverSocket.getLocalPort();
         while (true) {
             // Wait for a client connection.
             Socket connectionSocket = serverSocket.accept();
