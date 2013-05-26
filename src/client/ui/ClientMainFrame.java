@@ -229,7 +229,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 		JFrame jw = new JFrame(title);
 		jw.setLayout(new BorderLayout());
 		jw.add(new JLabel(message), BorderLayout.CENTER);
-		jw.setSize(75,75);
+		jw.setSize(100, 75);
 		
 		return jw;
 	}
