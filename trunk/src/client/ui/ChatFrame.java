@@ -2,22 +2,24 @@ package client.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+
+import common.io.FileUtils;
 import common.ui.UIConstants;
 
 public class ChatFrame extends JFrame implements Observer {
@@ -35,9 +37,10 @@ public class ChatFrame extends JFrame implements Observer {
 	private JTextPane chatTextPane;
 	private JTextArea sendTextArea;
 	private JButton sendFoto, sendText;
+	private JFileChooser fileChooser;
+	private HTMLEditorKit kit;
+	private HTMLDocument doc;
 	private ChatActionListener chatActionListener;
-	private Style def = StyleContext.getDefaultStyleContext().
-			getStyle(StyleContext.DEFAULT_STYLE);
 	
 	public JButton getSendFoto() {
 		return sendFoto;
@@ -51,9 +54,15 @@ public class ChatFrame extends JFrame implements Observer {
 		return sendTextArea;
 	}
 	
+	public JFileChooser getFileChooser() {
+		return fileChooser;
+	}
+	
 	public ChatFrame(String user) {
 		//start the action listener
 		chatActionListener = new ChatActionListener(this);
+		//start the filechooser
+		fileChooser = new JFileChooser();
 		
 		setTitle(user);
 		loadMainPanel();
@@ -68,21 +77,33 @@ public class ChatFrame extends JFrame implements Observer {
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		if (arg instanceof String[]) { //log message to chatArea
-			
-			String[] message = (String[])arg;
-			StyledDocument doc = chatTextPane.getStyledDocument();
+		if (arg instanceof Object[]) {
+			Object[] message = (Object[])arg;
 			try {
-				Style style = doc.addStyle("bold", def);
-				StyleConstants.setBold(style, true);
-				doc.insertString(doc.getLength(), message[0] + ": ", 
-						doc.getStyle("bold"));
-
-				doc.insertString(doc.getLength(), message[1] + "\n", def);
-			} catch (BadLocationException e) {}
-			sendTextArea.setText(null);
-			sendTextArea.setCaretPosition(0);
-			
+				if (message[1] instanceof String) {
+					String text = "<b>"+message[0]+": </b>" + 
+							String.valueOf(message[1]) + "</br>";
+					kit.insertHTML(doc, doc.getLength(),text , 0, 0, null);
+					sendTextArea.setText(null);
+					sendTextArea.setCaretPosition(0);
+				} else if (message[1] instanceof byte[]) {
+					String htmlImage = "";
+					if (message[0].equals(getTitle())) {
+						htmlImage = "<a href=\"" +
+								((ChatModel)o).getLastAddedIndex() + "\"><img src=\""+
+								FileUtils.getDefaultIconURL().toString()
+								+"\"/></a>";
+					} else {
+						htmlImage = "<img src=\""+
+								FileUtils.getDefaultIconURL().toString()
+								+"\"/>";
+					}
+					String image = "<b>"+message[0]+": </b>" + 
+							htmlImage + "</br>";
+					
+					kit.insertHTML(doc, doc.getLength(),image , 0, 0, null);
+				}
+			} catch (BadLocationException | IOException e) {}
 		}
 		
 		setVisible(true);
@@ -102,6 +123,11 @@ public class ChatFrame extends JFrame implements Observer {
 		//chat contents
 		chatTextPane = new JTextPane();
 		chatTextPane.setEditable(false);
+		kit = new HTMLEditorKit();
+	    doc = new HTMLDocument();
+	    chatTextPane.setEditorKit(kit);
+	    chatTextPane.setDocument(doc);
+	    chatTextPane.addHyperlinkListener(chatActionListener);
 		
 		//main panel scroll
 		mainPanelScroll = new JScrollPane(chatTextPane);
