@@ -1,7 +1,11 @@
 package server;
 
+import common.error.ThreadUncaughtExceptionHandler;
 import common.protocol.*;
+
 import java.util.Observable;
+
+import server.error.ServerErrorStrategy;
 
 public class Protocol extends IProtocol {
 
@@ -24,4 +28,18 @@ public class Protocol extends IProtocol {
                 break;
         }
     }
+    
+    @Override
+	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance() {
+		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+		exceptionHandler.setCurrentStrategy(new ServerErrorStrategy());
+		return exceptionHandler;
+	}
+
+	@Override
+	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg) {
+		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler(msg);
+		exceptionHandler.setCurrentStrategy(new ServerErrorStrategy());
+		return exceptionHandler;
+	}
 }

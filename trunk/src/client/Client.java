@@ -6,6 +6,7 @@ package client;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +18,7 @@ import client.ui.ChatFrame;
 import client.ui.ChatModel;
 import client.ui.ClientMainFrame;
 import client.ui.ClientModel;
-import common.ThreadUncaughtExceptionHandler;
+import common.error.ThreadUncaughtExceptionHandler;
 
 /**
  *
@@ -116,6 +117,10 @@ public class Client {
     	//update model
     	clientModel.setSignedOut();
     	
+    	for (Entry<String, ChatModel> entry : listOfOpenChatModels.entrySet()) {
+    		ChatModel chatModel = entry.getValue();
+    		chatModel.close();
+    	}
     	//start
     	prepareClient();
     	//register the mainFrame as observer
@@ -160,6 +165,18 @@ public class Client {
         chatModel.updateCapabilitys(contact.getCapacity());
     }
     
+    public static void processExceptionCCMessage(CCMessage message) {
+    	//update the model
+    	String destUser = message.getDestinationName();
+    	ChatModel chatModel = listOfOpenChatModels.get(destUser);
+    	if (chatModel != null) {
+    		chatModel.setCCErrorMsg();
+    	}
+    	
+    	//try to contact the server to get the user local
+    	sendStartMessage(destUser);
+    }
+    
     public static void startMessage(String user2SendImage, File file) {
     	byte[] image = FileUtils.loadFile(file);
     	
@@ -202,7 +219,7 @@ public class Client {
         //Start a thread to listen for connections
         Thread thread = new Thread(conn);
         thread.setName("startConnection");
-        thread.setUncaughtExceptionHandler(new ThreadUncaughtExceptionHandler());
+        thread.setUncaughtExceptionHandler(protocol.getExceptionHandlerInstance());
         thread.start();
     }
 
@@ -212,19 +229,19 @@ public class Client {
         Message msg = new CSRegister(clientModel.getSignedInUser(), conn);
         connSend.setObject(msg);
         //new Thread(connSend).start();
-        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        ThreadUncaughtExceptionHandler exceptionHandler = protocol.getExceptionHandlerInstance(msg);
         Thread thread = new Thread(connSend);
         thread.setName("sendRegister");
         thread.setUncaughtExceptionHandler(exceptionHandler);
         thread.start();
     }
 
-    public static void sendStartMessage(String user2Talk) {
+    private static void sendStartMessage(String user2Talk) {
         ConnectionHandler connSend = new ConnectionHandler(protocol.getServerHost(),
         		protocol.getServerPort(), false);
         Message msg = new CSStartMessage(clientModel.getSignedInUser(), user2Talk, conn);
         connSend.setObject(msg);
-        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        ThreadUncaughtExceptionHandler exceptionHandler = protocol.getExceptionHandlerInstance(msg);
         Thread thread = new Thread(connSend);
         thread.setName("sendStartMessage");
         thread.setUncaughtExceptionHandler(exceptionHandler);
@@ -250,9 +267,13 @@ public class Client {
     }
 
     public static boolean processStartMessage(SCStartMessage msg) {
-        ChatModel chatModel = listOfOpenChatModels.get(msg.getUser().getName());
-        chatModel.updateCapabilitys(msg.getUser().getCapacity());
-        clientModel.addToUserListWithChat(msg.getUser());
+    	ChatModel chatModel = listOfOpenChatModels.get(msg.getUser().getName());
+    	if (!msg.getUser().isConnected()) { //Server couldn't contact the dest user
+    		chatModel.setCSStartErrorMsg();
+    	} else {
+    		chatModel.updateCapabilitys(msg.getUser().getCapacity());
+    		clientModel.addToUserListWithChat(msg.getUser());
+    	}
         return true;
     }
 

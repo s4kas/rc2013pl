@@ -6,6 +6,9 @@ import java.util.Observable;
 
 public class ChatModel extends Observable {
 	
+	public static final String CCMESSAGE_ERROR = "CCMessageError";
+	public static final String CSSTART_ERROR = "CSStartError";
+	
 	private LinkedList<byte[]> currentReceivedFile;
 	
 	public ChatModel() {
@@ -25,6 +28,16 @@ public class ChatModel extends Observable {
 		notifyObservers();
 	}
 	
+	public void setCCErrorMsg() {
+		setChanged();
+		notifyObservers(CCMESSAGE_ERROR);
+	}
+	
+	public void setCSStartErrorMsg() {
+		setChanged();
+		notifyObservers(CSSTART_ERROR);
+	}
+	
 	public int getLastAddedIndex() {
 		return currentReceivedFile.size() - 1;
 	}
@@ -36,5 +49,10 @@ public class ChatModel extends Observable {
 	public void updateCapabilitys(List<String> capacity) {
 		setChanged();
 		notifyObservers(capacity);
+	}
+	
+	public void close() {
+		setChanged();
+		notifyObservers();
 	}
 }

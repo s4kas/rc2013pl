@@ -1,8 +1,9 @@
 package client;
 
+import client.error.ClientErrorStrategy;
 import client.properties.ClientProps;
+import common.error.ThreadUncaughtExceptionHandler;
 import common.protocol.*;
-
 import java.util.List;
 import java.util.Observable;
 
@@ -47,4 +48,18 @@ public class Protocol extends IProtocol {
     	}
     	return capabilitys;
     }
+    
+    @Override
+	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance() {
+		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+		exceptionHandler.setCurrentStrategy(new ClientErrorStrategy());
+		return exceptionHandler;
+	}
+    
+	@Override
+	public ThreadUncaughtExceptionHandler getExceptionHandlerInstance(Message msg) {
+		ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler(msg);
+		exceptionHandler.setCurrentStrategy(new ClientErrorStrategy());
+		return exceptionHandler;
+	}
 }
