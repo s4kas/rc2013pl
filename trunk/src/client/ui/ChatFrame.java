@@ -3,6 +3,7 @@ package client.ui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
@@ -20,6 +21,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import common.io.FileUtils;
+import common.protocol.ICapability;
 import common.ui.UIConstants;
 
 public class ChatFrame extends JFrame implements Observer {
@@ -107,6 +109,14 @@ public class ChatFrame extends JFrame implements Observer {
 					kit.insertHTML(doc, doc.getLength(),image , 0, 0, null);
 				}
 			} catch (BadLocationException | IOException e) {}
+		} else if (arg instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<String> capabilitys = (List<String>)arg;
+			for (String cap : capabilitys) {
+				if (cap.equals(ICapability.PNG)) {
+					sendFoto.setEnabled(true);
+				}
+			}
 		}
 		
 		setVisible(true);
@@ -165,6 +175,7 @@ public class ChatFrame extends JFrame implements Observer {
 		sendFoto = new JButton(UIConstants.CHAT_SEND_FOTO);
 		sendFoto.setMinimumSize(new Dimension((FOOTER_WIDTH / 4), FOOTER_HEIGHT));
 		sendFoto.addActionListener(chatActionListener);
+		sendFoto.setEnabled(false);
 		footerPanel.add(sendFoto);
 		footerPanel.add(Box.createHorizontalStrut(10));
 		

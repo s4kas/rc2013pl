@@ -4,24 +4,16 @@ import java.util.Properties;
 
 
 public class CommonProps {
-	
-	private static final String SERVER_HOST = "serverHost";
+
 	private static final String SERVER_PORT = "serverPort";
 	
-	private static Properties clientProperties;
-	
-	public static String getServerHost() {
-		if (clientProperties == null) {
-			clientProperties = PropertiesManager.loadCommonProps();
-		}
-		return clientProperties.getProperty(SERVER_HOST);
-	}
+	private static Properties commonProperties;
 	
 	public static int getServerPort() {
-		if (clientProperties == null) {
-			clientProperties = PropertiesManager.loadCommonProps();
+		if (commonProperties == null) {
+			commonProperties = PropertiesManager.loadCommonProps();
 		}
-		return Integer.parseInt(clientProperties.getProperty(SERVER_PORT));
+		return Integer.parseInt(commonProperties.getProperty(SERVER_PORT));
 	}
 	
 }

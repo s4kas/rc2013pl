@@ -1,6 +1,7 @@
 package client.ui;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Observable;
 
 public class ChatModel extends Observable {
@@ -30,5 +31,10 @@ public class ChatModel extends Observable {
 
 	public byte[] getReceivedFile(int i) {
 		return currentReceivedFile.get(i);
+	}
+
+	public void updateCapabilitys(List<String> capacity) {
+		setChanged();
+		notifyObservers(capacity);
 	}
 }

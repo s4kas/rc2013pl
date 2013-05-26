@@ -2,7 +2,6 @@ package common.protocol;
 
 import common.ConnectionHandler;
 import common.properties.CommonProps;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Observer;
@@ -10,7 +9,6 @@ import java.util.Observer;
 public abstract class IProtocol implements Observer {
 	
     private int serverPort;
-    private String serverHost;
     private String currentHost;
 
     public int getServerPort() {
@@ -18,13 +16,6 @@ public abstract class IProtocol implements Observer {
     		serverPort = CommonProps.getServerPort();
     	}
     	return serverPort;
-    }    
-
-    public String getServerHost() {
-    	if (serverHost == null) {
-    		serverHost = CommonProps.getServerHost();
-    	}
-    	return serverHost;
     }
     
     public String getCurrentHost() {

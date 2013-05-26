@@ -1,9 +1,15 @@
 package client;
 
+import client.properties.ClientProps;
 import common.protocol.*;
+
+import java.util.List;
 import java.util.Observable;
 
 public class Protocol extends IProtocol {
+	
+	private String serverHost;
+	private List<String> capabilitys;
 
     @Override
     public void update(Observable o, Object arg) {
@@ -26,5 +32,19 @@ public class Protocol extends IProtocol {
                 System.out.println("Nao sei quem es");
                 break;
         }
+    }
+    
+    public String getServerHost() {
+    	if (serverHost == null) {
+    		serverHost = ClientProps.getServerHost();
+    	}
+    	return serverHost;
+    }
+    
+    public List<String> getClientCapabilitys() {
+    	if (capabilitys == null) {
+    		capabilitys = ClientProps.getCapabilitys();
+    	}
+    	return capabilitys;
     }
 }
