@@ -17,6 +17,7 @@ import client.ui.ChatFrame;
 import client.ui.ChatModel;
 import client.ui.ClientMainFrame;
 import client.ui.ClientModel;
+import common.ThreadUncaughtExceptionHandler;
 
 /**
  *
@@ -33,8 +34,8 @@ public class Client {
     private static Timer sendRegisterTimer, signInTimeout;
 
     public static void main(String[] args) {
-    	prepareClient();
-    	
+        prepareClient();
+
         //start the UI
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -47,16 +48,18 @@ public class Client {
         //start a connection to process incoming messages
         startConnection();
     }
-    
+
     private static void prepareClient() {
-    	//instantiate a new Map to control the open chat windows
+        //instantiate a new Map to control the open chat windows
         listOfOpenChatModels = new ConcurrentHashMap<String, ChatModel>();
 
         //create the client model
         clientModel = new ClientModel();
-        
+
         //Protocol
         protocol = new Protocol();
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        protocol.setExceptionHandler(exceptionHandler);
     }
 
     private static void createAndShowUI() {
@@ -86,7 +89,7 @@ public class Client {
                 }
             }
         }, CLIENT_SERVER_TIMEOUT);
-        
+
         // send a register every 1 min to update user list
         sendRegisterTimer = new Timer();
         sendRegisterTimer.scheduleAtFixedRate(new TimerTask() {
@@ -97,29 +100,29 @@ public class Client {
             }
         }, 0, 1 * 10 * 1000);
     }
-    
+
     public static void logOut() {
-    	//stop
-    	sendRegisterTimer.cancel();
-    	sendRegisterTimer.purge();
-    	signInTimeout.cancel();
-    	signInTimeout.purge();
-    	conn.stopServer();
-    	//update model
-    	clientModel.setSignedOut();
-    	
-    	//start
-    	prepareClient();
-    	//register the mainFrame as observer
+        //stop
+        sendRegisterTimer.cancel();
+        sendRegisterTimer.purge();
+        signInTimeout.cancel();
+        signInTimeout.purge();
+        conn.stopServer();
+        //update model
+        clientModel.setSignedOut();
+
+        //start
+        prepareClient();
+        //register the mainFrame as observer
         clientModel.addObserver(mainFrame);
-    	startConnection();
+        startConnection();
     }
-    
+
     public static void saveFile(String chatUser, int fileIndex, File file) {
-    	ChatModel chatModel = listOfOpenChatModels.get(chatUser);
-    	byte[] b = chatModel.getReceivedFile(fileIndex);
-    	
-    	FileUtils.saveFile(b, file);
+        ChatModel chatModel = listOfOpenChatModels.get(chatUser);
+        byte[] b = chatModel.getReceivedFile(fileIndex);
+
+        FileUtils.saveFile(b, file);
     }
 
     public static void startChat(int userListIndex) {
@@ -136,27 +139,27 @@ public class Client {
             chatModel.setFocus();
         }
     }
-    
+
     private static void openNewChat(Contact contact) {
-    	//update the model
-    	clientModel.addToUserListWithChat(contact);
-    	
-    	//open new chat
-    	ChatModel chatModel = new ChatModel();
-    	String user2Talk = contact.getName();
+        //update the model
+        clientModel.addToUserListWithChat(contact);
+
+        //open new chat
+        ChatModel chatModel = new ChatModel();
+        String user2Talk = contact.getName();
         chatModel.addObserver(new ChatFrame(user2Talk));
         listOfOpenChatModels.put(user2Talk, chatModel);
     }
-    
+
     public static void startMessage(String user2SendImage, File file) {
-    	byte[] image = FileUtils.loadFile(file);
-    	
-    	//Update Model
+        byte[] image = FileUtils.loadFile(file);
+
+        //Update Model
         ChatModel chatModel = listOfOpenChatModels.get(user2SendImage);
         chatModel.addContent(new Object[]{clientModel.getSignedInUser().getName(),
-        		image});
+                    image});
 
-    	//send the image
+        //send the image
         Contact contact = clientModel.getUserWithChat(user2SendImage);
         if (contact == null) { //no connection established to the user
             sendStartMessage(user2SendImage);
@@ -201,21 +204,25 @@ public class Client {
 
     private static void sendStartMessage(String user2Talk) {
         ConnectionHandler connSend = new ConnectionHandler(protocol.getServerHost(),
-        		protocol.getServerPort(), false);
+                protocol.getServerPort(), false);
         Message msg = new CSStartMessage(clientModel.getSignedInUser(), user2Talk, conn);
         connSend.setObject(msg);
-        new Thread(connSend).start();
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        Thread thread = new Thread(connSend);
+        thread.setName("startmessage");
+        thread.setUncaughtExceptionHandler(exceptionHandler);
+        thread.start();
     }
-    
+
     private static void sendMessage(Contact contact, byte[] image) {
-    	CCMessage request = new CCMessage(new PngCapability(image), 
-        		conn, clientModel.getSignedInUser().getName());
+        CCMessage request = new CCMessage(new PngCapability(image),
+                conn, clientModel.getSignedInUser().getName());
         protocol.sendMessage(request, contact.getHost(), contact.getPort());
     }
 
     private static void sendMessage(Contact contact, String message) {
-        CCMessage request = new CCMessage(new TextCapability(message), 
-        		conn, clientModel.getSignedInUser().getName());
+        CCMessage request = new CCMessage(new TextCapability(message),
+                conn, clientModel.getSignedInUser().getName());
         protocol.sendMessage(request, contact.getHost(), contact.getPort());
     }
 
@@ -233,9 +240,9 @@ public class Client {
     }
 
     public static boolean processUpdateInfo(SCUpdateInfo msg) {
-    	//open new chat window
-    	openNewChat(msg.getRequester());
-    	
+        //open new chat window
+        openNewChat(msg.getRequester());
+
         CSUpdateInfo response = new CSUpdateInfo(clientModel.getSignedInUser(), conn);
         response.setRequester(msg.getRequester());
         protocol.sendMessage(response, msg.getSenderHost(), msg.getSenderPort());
@@ -243,17 +250,17 @@ public class Client {
     }
 
     public static boolean processMessage(CCMessage msg) {
-    	ChatModel chatModel = listOfOpenChatModels.get(msg.getSenderName());
-    	
-    	//Update Model
-    	ICapability cap = msg.getCapabilityContent();
-    	if (cap instanceof TextCapability) {
-    		chatModel.addContent(new Object[] {msg.getSenderName(), 
-    				((TextCapability) cap).getText()});
-    	} else if (cap instanceof PngCapability) {
-    		chatModel.addContent(new Object[] {msg.getSenderName(), 
-    				((PngCapability) cap).getPngImage()});
-    	}
+        ChatModel chatModel = listOfOpenChatModels.get(msg.getSenderName());
+
+        //Update Model
+        ICapability cap = msg.getCapabilityContent();
+        if (cap instanceof TextCapability) {
+            chatModel.addContent(new Object[]{msg.getSenderName(),
+                        ((TextCapability) cap).getText()});
+        } else if (cap instanceof PngCapability) {
+            chatModel.addContent(new Object[]{msg.getSenderName(),
+                        ((PngCapability) cap).getPngImage()});
+        }
         return true;
     }
 }
