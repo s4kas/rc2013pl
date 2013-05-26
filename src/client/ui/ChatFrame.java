@@ -102,9 +102,9 @@ public class ChatFrame extends JFrame implements Observer {
 			
 		} else if (arg instanceof String) {
 			
-			String errorMsg = String.valueOf(arg);
+			String msg = String.valueOf(arg);
 			try {
-				showErrorMsg(errorMsg);
+				showMsg(msg);
 			} catch (BadLocationException | IOException e) {}
 			
 		}
@@ -126,15 +126,21 @@ public class ChatFrame extends JFrame implements Observer {
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
 	}
 	
-	private void showErrorMsg(String errorMsg) throws BadLocationException, IOException {
-		String error = "";
-		if (errorMsg.equals(ChatModel.CCMESSAGE_ERROR)) {
-			error = UIConstants.CCMESSAGE_ERROR;
-		} else if (errorMsg.equals(ChatModel.CSSTART_ERROR)) {
-			error = UIConstants.CSSTART_ERROR;
+	private void showMsg(String msg) throws BadLocationException, IOException {
+		String partMsg = "";
+		String fontColor = "red";
+		if (msg.equals(ChatModel.CCMESSAGE_ERROR)) {
+			partMsg = UIConstants.CCMESSAGE_ERROR;
+		} else if (msg.equals(ChatModel.CSSTART_ERROR)) {
+			partMsg = UIConstants.USER_OFFLINE;
+		} else if (msg.equals(ChatModel.LOGIN_MSG)) {
+			partMsg = UIConstants.USER_ONLINE;
+			fontColor = "green";
+		} else if (msg.equals(ChatModel.LOGOUT_MSG)) {
+			partMsg = UIConstants.USER_OFFLINE;
 		}
 		kit.insertHTML(doc, doc.getLength(),"<font color=\""+
-			"red"+"\">"+ error +
+			fontColor+"\">"+ partMsg +
 			"</font>", 0, 0, null);
 	}
 	

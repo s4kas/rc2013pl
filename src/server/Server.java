@@ -140,6 +140,7 @@ public class Server {
     }
 
     public static void processExceptionSCUpdateInfo(SCUpdateInfo sCmsg) {
+    	users.remove(sCmsg.getDestUser());
         CSUpdateInfo response = new CSUpdateInfo(new Contact(sCmsg.getDestUser()), conn);
         response.setRequester(sCmsg.getRequester());
         processUpdateInfo(response);
