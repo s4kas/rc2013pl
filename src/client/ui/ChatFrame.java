@@ -83,46 +83,87 @@ public class ChatFrame extends JFrame implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		if (arg instanceof Object[]) {
+			
 			Object[] message = (Object[])arg;
 			try {
 				if (message[1] instanceof String) {
-					String text = "<b>"+message[0]+": </b>" + 
-							String.valueOf(message[1]) + "</br>";
-					kit.insertHTML(doc, doc.getLength(),text , 0, 0, null);
-					sendTextArea.setText(null);
-					sendTextArea.setCaretPosition(0);
+					updateChatTextContents(message);
 				} else if (message[1] instanceof byte[]) {
-					String htmlImage = "";
-					if (message[0].equals(getTitle())) {
-						htmlImage = "<a href=\"" +
-								((ChatModel)o).getLastAddedIndex() + "\"><img src=\""+
-								FileUtils.getDefaultIconURL().toString()
-								+"\"/></a>";
-					} else {
-						htmlImage = "<img src=\""+
-								FileUtils.getDefaultIconURL().toString()
-								+"\"/>";
-					}
-					String image = "<b>"+message[0]+": </b>" + 
-							htmlImage + "</br>";
-					
-					kit.insertHTML(doc, doc.getLength(),image , 0, 0, null);
+					updateChatImageContents(message, ((ChatModel)o).getLastAddedIndex());
 				}
 			} catch (BadLocationException | IOException e) {}
+				
 		} else if (arg instanceof List) {
+			
 			@SuppressWarnings("unchecked")
 			List<String> capabilitys = (List<String>)arg;
-			for (String cap : capabilitys) {
-				if (cap.equals(ICapability.PNG)) {
-					sendFoto.setEnabled(true);
-				}
-			}
+			updateCapabilitys(capabilitys);
+			
+		} else if (arg instanceof String) {
+			
+			String errorMsg = String.valueOf(arg);
+			try {
+				showErrorMsg(errorMsg);
+			} catch (BadLocationException | IOException e) {}
+			
 		}
 		
 		setVisible(true);
 		toFront();
 	}
-
+	
+	private void showErrorMsg(String errorMsg) throws BadLocationException, IOException {
+		String error = "";
+		if (errorMsg.equals(ChatModel.CCMESSAGE_ERROR)) {
+			error = UIConstants.CCMESSAGE_ERROR;
+		} else if (errorMsg.equals(ChatModel.CSSTART_ERROR)) {
+			error = UIConstants.CSSTART_ERROR;
+		}
+		kit.insertHTML(doc, doc.getLength(),"<font color=\""+
+			"red"+"\">"+ error +
+			"</font>", 0, 0, null);
+	}
+	
+	private void updateCapabilitys(List<String> capabilitys) {
+		boolean sendFotoInd = false;
+		for (String cap : capabilitys) {
+			if (cap.equals(ICapability.PNG)) {
+				sendFotoInd = true;
+			}
+		}
+		if (sendFotoInd) {
+			sendFoto.setEnabled(true);
+		} else {
+			sendFoto.setEnabled(false);
+		}
+	}
+	
+	private void updateChatTextContents(Object[] message) throws BadLocationException, IOException {
+		String text = "<b>"+message[0]+": </b>" + 
+			String.valueOf(message[1]) + "</br>";
+		kit.insertHTML(doc, doc.getLength(),text , 0, 0, null);
+		sendTextArea.setText(null);
+		sendTextArea.setCaretPosition(0);
+	}
+	
+	private void updateChatImageContents(Object[] message, int fileIndex) throws BadLocationException, IOException {
+		String htmlImage = "";
+		if (message[0].equals(getTitle())) {
+			htmlImage = "<a href=\"" +
+					fileIndex + "\"><img src=\""+
+					FileUtils.getDefaultIconURL().toString()
+					+"\"/></a>";
+		} else {
+			htmlImage = "<img src=\""+
+					FileUtils.getDefaultIconURL().toString()
+					+"\"/>";
+		}
+		String image = "<b>"+message[0]+": </b>" + 
+				htmlImage + "</br>";
+		
+		kit.insertHTML(doc, doc.getLength(),image , 0, 0, null);
+	}
+	
 	private void loadMainPanel() {
 		mainPanel = new JPanel();
 		mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));

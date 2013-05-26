@@ -40,6 +40,11 @@ public class Contact implements Serializable {
         this.port = port;
         this.capacity = capacity;
     }
+    
+    public Contact(String name) {
+    	this.name = name;
+    	this.isConnected = false;
+    }
 
     public String getName() {
         return name;

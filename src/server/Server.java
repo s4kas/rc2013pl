@@ -5,7 +5,7 @@
 package server;
 
 import common.ConnectionHandler;
-import common.ThreadUncaughtExceptionHandler;
+import common.error.ThreadUncaughtExceptionHandler;
 import common.protocol.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+
 import server.ui.ServerMainFrame;
 import server.ui.ServerModel;
 
@@ -23,7 +24,6 @@ import server.ui.ServerModel;
  */
 public class Server {
 
-    private static ServerMainFrame mainFrame;
     private static ServerModel serverModel;
     private static IProtocol protocol;
     private static ConnectionHandler conn;
@@ -40,7 +40,7 @@ public class Server {
 
     private static void createAndShowUI() {
         //Create and set up the Main window.
-        mainFrame = new ServerMainFrame();
+        ServerMainFrame mainFrame = new ServerMainFrame();
 
         //start a server Model and register mainFrame observer
         serverModel = new ServerModel();
@@ -73,7 +73,7 @@ public class Server {
         }, 1 * 30 * 1000, 1 * 30 * 1000);
 
         //a thread to listen for incoming messages
-        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        ThreadUncaughtExceptionHandler exceptionHandler = protocol.getExceptionHandlerInstance();
         Thread thread = new Thread(conn);
         thread.setName("startServer");
         thread.setUncaughtExceptionHandler(exceptionHandler);
@@ -125,6 +125,7 @@ public class Server {
         }
         // Create message to check if user is connected
         SCUpdateInfo request = new SCUpdateInfo(conn);
+        request.setDestUser(msg.getUser2Talk());
         request.setRequester(msg.getUser());
 
         protocol.sendMessage(request, destinationUser.getHost(), destinationUser.getPort());
@@ -137,6 +138,12 @@ public class Server {
         protocol.sendMessage(response, requesterContact.getHost(), requesterContact.getPort());
         return true;
     }
+    
+    public static void processExceptionSCUpdateInfo(SCUpdateInfo sCmsg) {
+    	CSUpdateInfo response = new CSUpdateInfo(new Contact(sCmsg.getDestUser()), conn);
+		response.setRequester(sCmsg.getRequester());
+		processUpdateInfo(response);
+	}
 
     private static ArrayList<String> getOnlineUser(String requesterName) {
         ArrayList<String> resultList = new ArrayList<>();
@@ -148,9 +155,4 @@ public class Server {
         Collections.sort(resultList);
         return resultList;
     }
-
-    public static ConnectionHandler getConn() {
-        return conn;
-    }
-    
 }
