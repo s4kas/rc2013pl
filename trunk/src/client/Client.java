@@ -152,10 +152,13 @@ public class Client {
     	clientModel.addToUserListWithChat(contact);
     	
     	//open new chat
-    	ChatModel chatModel = new ChatModel();
     	String user2Talk = contact.getName();
-        chatModel.addObserver(new ChatFrame(user2Talk));
-        listOfOpenChatModels.put(user2Talk, chatModel);
+    	ChatModel chatModel = listOfOpenChatModels.get(user2Talk);
+    	if (chatModel == null) {
+    		chatModel = new ChatModel();
+    		chatModel.addObserver(new ChatFrame(user2Talk));
+            listOfOpenChatModels.put(user2Talk, chatModel);
+    	}  
         chatModel.updateCapabilitys(contact.getCapacity());
     }
     
