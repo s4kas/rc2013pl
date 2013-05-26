@@ -53,7 +53,7 @@ public class Server {
         //a protocol to process incoming messages
         //instantiate a new connection handler
         protocol = new Protocol();
-        conn = new ConnectionHandler(protocol.getServerHost(), protocol.getServerPort(), true);
+        conn = new ConnectionHandler(protocol.getCurrentHost(), protocol.getServerPort(), true);
         conn.addObserver(protocol);
 
         //a thread to listen for incoming messages

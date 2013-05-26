@@ -4,12 +4,14 @@
  */
 package client;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import common.ConnectionHandler;
+import common.io.FileUtils;
 import common.protocol.*;
 import common.ui.UIConstants;
 import client.ui.ChatFrame;
@@ -30,6 +32,15 @@ public class Client {
     private static ConnectionHandler conn;
 
     public static void main(String[] args) {
+    	//instantiate a new Map to control the open chat windows
+        listOfOpenChatModels = new ConcurrentHashMap<String, ChatModel>();
+
+        //create the client model
+        clientModel = new ClientModel();
+        
+        //Protocol
+        protocol = new Protocol();
+    	
         //start the UI
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -39,15 +50,6 @@ public class Client {
 
         //start a connection to process incoming messages
         startConnection();
-
-        //instantiate a new Map to control the open chat windows
-        listOfOpenChatModels = new ConcurrentHashMap<String, ChatModel>();
-        
-        //create the client model
-        clientModel = new ClientModel();
-        
-        //Protocol
-        protocol = new Protocol();
     }
 
     private static void createAndShowUI() {
@@ -91,6 +93,13 @@ public class Client {
         }, 0, 1 * 10 * 1000);
 
     }
+    
+    public static void saveFile(String chatUser, int fileIndex, File file) {
+    	ChatModel chatModel = listOfOpenChatModels.get(chatUser);
+    	byte[] b = chatModel.getReceivedFile(fileIndex);
+    	
+    	FileUtils.saveFile(b, file);
+    }
 
     public static void startChat(int userListIndex) {
         String user2Talk = clientModel.getUserList().get(userListIndex);
@@ -117,11 +126,28 @@ public class Client {
         chatModel.addObserver(new ChatFrame(user2Talk));
         listOfOpenChatModels.put(user2Talk, chatModel);
     }
+    
+    public static void startMessage(String user2SendImage, File file) {
+    	byte[] image = FileUtils.loadFile(file);
+    	
+    	//Update Model
+        ChatModel chatModel = listOfOpenChatModels.get(user2SendImage);
+        chatModel.addContent(new Object[]{clientModel.getSignedInUser().getName(),
+        		image});
+
+    	//send the image
+        Contact contact = clientModel.getUserWithChat(user2SendImage);
+        if (contact == null) { //no connection established to the user
+            sendStartMessage(user2SendImage);
+        } else { //direct connection to user
+            sendMessage(contact, image);
+        }
+    }
 
     public static void startMessage(String user2Talk, String message) {
         //Update Model
         ChatModel chatModel = listOfOpenChatModels.get(user2Talk);
-        chatModel.setMessage(new String[]{clientModel.getSignedInUser().getName(),
+        chatModel.addContent(new String[]{clientModel.getSignedInUser().getName(),
                     message});
 
         //get the contact for this user
@@ -131,7 +157,6 @@ public class Client {
         } else { //direct connection to user
             sendMessage(contact, message);
         }
-
     }
 
     private static void startConnection() {
@@ -160,9 +185,16 @@ public class Client {
         connSend.setObject(msg);
         new Thread(connSend).start();
     }
+    
+    private static void sendMessage(Contact contact, byte[] image) {
+    	CCMessage request = new CCMessage(new PngCapability(image), 
+        		conn, clientModel.getSignedInUser().getName());
+        protocol.sendMessage(request, contact.getHost(), contact.getPort());
+    }
 
     private static void sendMessage(Contact contact, String message) {
-        CCMessage request = new CCMessage(message, conn, clientModel.getSignedInUser().getName());
+        CCMessage request = new CCMessage(new TextCapability(message), 
+        		conn, clientModel.getSignedInUser().getName());
         protocol.sendMessage(request, contact.getHost(), contact.getPort());
     }
 
@@ -189,9 +221,17 @@ public class Client {
     }
 
     public static boolean processMessage(CCMessage msg) {
-        //Update Model
-        ChatModel chatModel = listOfOpenChatModels.get(msg.getSenderName());
-        chatModel.setMessage(new String[]{msg.getSenderName(),msg.getText()});
+    	ChatModel chatModel = listOfOpenChatModels.get(msg.getSenderName());
+    	
+    	//Update Model
+    	ICapability cap = msg.getCapabilityContent();
+    	if (cap instanceof TextCapability) {
+    		chatModel.addContent(new Object[] {msg.getSenderName(), 
+    				((TextCapability) cap).getText()});
+    	} else if (cap instanceof PngCapability) {
+    		chatModel.addContent(new Object[] {msg.getSenderName(), 
+    				((PngCapability) cap).getPngImage()});
+    	}
         return true;
     }
 }
