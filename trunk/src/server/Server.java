@@ -84,7 +84,7 @@ public class Server {
             Date now = calendar.getTime();
             
             calendar.setTime(user.getLastUpdate());
-            calendar.add(Calendar.MINUTE, 1);
+            calendar.add(Calendar.SECOND, 30);
             Date lastUpdate = calendar.getTime();
             
             if (lastUpdate.compareTo(now)<0) {
