@@ -7,10 +7,12 @@ package client;
 import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import common.ConnectionHandler;
+import common.ListUtils;
 import common.io.FileUtils;
 import common.protocol.*;
 import common.ui.UIConstants;
@@ -261,7 +263,29 @@ public class Client {
     }
 
     public static boolean processRegister(SCRegister msg) {
-        clientModel.setUserList(msg.getUsersList());
+    	List<String> addedUsers = ListUtils.getAddedUsers(msg.getUsersList(), 
+    			clientModel.getUserList());
+    	if (!addedUsers.isEmpty()) {
+    		for (String user : addedUsers) {
+    			ChatModel chatModel = listOfOpenChatModels.get(user);
+    			if (chatModel != null) {
+    				chatModel.setLoginMsg();
+    			}
+    		}
+    	}
+        
+    	List<String> removedUsers = ListUtils.getRemovedUsers(msg.getUsersList(), 
+        		clientModel.getUserList());
+        if (!removedUsers.isEmpty()) {
+        	for (String user : removedUsers) {
+        		ChatModel chatModel = listOfOpenChatModels.get(user);
+        		if (chatModel != null) {
+        			chatModel.setLogoutMsg();
+    			}
+    		}
+        }
+        
+        clientModel.setUserList(msg.getUsersList(), addedUsers, removedUsers);
         clientModel.setSignedIn();
         return true;
     }
@@ -270,6 +294,7 @@ public class Client {
         ChatModel chatModel = listOfOpenChatModels.get(msg.getUser().getName());
         if (!msg.getUser().isConnected()) { //Server couldn't contact the dest user
             chatModel.setCSStartErrorMsg();
+            clientModel.removeFromUserList(msg.getUser().getName());
         } else {
             chatModel.updateCapabilitys(msg.getUser().getCapacity());
             clientModel.addToUserListWithChat(msg.getUser());

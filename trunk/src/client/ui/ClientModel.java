@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
-
 import common.protocol.Contact;
 
 public class ClientModel extends Observable {
@@ -74,9 +73,8 @@ public class ClientModel extends Observable {
         return userList;
     }
 
-    public void setUserList(List<String> userList) {
-        List<String> addedUsers = getAddedUsers(userList);
-        List<String> removedUsers = getRemovedUsers(userList);
+    public void setUserList(List<String> userList, 
+    		List<String> addedUsers, List<String> removedUsers) {
         Map<String, List<String>> usersListMap = new ConcurrentHashMap<String, List<String>>();
         usersListMap.put(ADDED_USERS, addedUsers);
         usersListMap.put(REMOVED_USERS, removedUsers);
@@ -85,6 +83,13 @@ public class ClientModel extends Observable {
 
         setChanged();
         notifyObservers(usersListMap);
+    }
+    
+    public void removeFromUserList(String user) {
+    	userList.remove(user);
+    	List<String> removedUsers = new ArrayList<String>();
+    	removedUsers.add(user);
+    	setUserList(userList, new ArrayList<String>(), removedUsers);
     }
 
     public Contact getUserWithChat(String userName) {
@@ -105,39 +110,5 @@ public class ClientModel extends Observable {
 
     public void setSignedInUser(Contact signedInUser) {
         this.signedInUser = signedInUser;
-    }
-
-    private List<String> getRemovedUsers(List<String> allUsers) {
-        List<String> removedUsers = new ArrayList<String>();
-        for (String userFromClient : this.userList) {
-            boolean removedUser = true;
-            for (String userFromServer : allUsers) {
-                if (userFromServer.equals(userFromClient)) {
-                    removedUser = false;
-                }
-            }
-
-            if (removedUser) {
-                removedUsers.add(userFromClient);
-            }
-        }
-        return removedUsers;
-    }
-
-    private List<String> getAddedUsers(List<String> allUsers) {
-        List<String> addedUsers = new ArrayList<String>();
-        for (String userFromServer : allUsers) {
-            boolean newUser = true;
-            for (String userFromClient : this.userList) {
-                if (userFromServer.equals(userFromClient)) {
-                    newUser = false;
-                }
-            }
-
-            if (newUser) {
-                addedUsers.add(userFromServer);
-            }
-        }
-        return addedUsers;
     }
 }

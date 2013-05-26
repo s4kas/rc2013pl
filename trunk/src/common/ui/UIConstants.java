@@ -13,7 +13,8 @@ public class UIConstants {
 	public static final String USERS_IN = "Users signing In";
 	public static final String USERS_OUT = "Users signing Out";
 	public static final String CCMESSAGE_ERROR = "This message could not be delivered!";
-	public static final String CSSTART_ERROR = "This user is offline!";
+	public static final String USER_OFFLINE = "This user is offline!";
+	public static final String USER_ONLINE = "This user is now online!";
 	
 	public static final String DEBUG_TITLE = "Debug Console";
 	public static final String DEBUG_START = "Debuging started";

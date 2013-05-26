@@ -8,6 +8,8 @@ public class ChatModel extends Observable {
 	
 	public static final String CCMESSAGE_ERROR = "CCMessageError";
 	public static final String CSSTART_ERROR = "CSStartError";
+	public static final String LOGIN_MSG = "LoginMsg";
+	public static final String LOGOUT_MSG = "LogoutMsg";
 	public static final Boolean CLOSE_CHAT = Boolean.TRUE;
 	
 	private LinkedList<byte[]> currentReceivedFile;
@@ -37,6 +39,16 @@ public class ChatModel extends Observable {
 	public void setCSStartErrorMsg() {
 		setChanged();
 		notifyObservers(CSSTART_ERROR);
+	}
+	
+	public void setLoginMsg() {
+		setChanged();
+		notifyObservers(LOGIN_MSG);
+	}
+	
+	public void setLogoutMsg() {
+		setChanged();
+		notifyObservers(LOGOUT_MSG);
 	}
 	
 	public int getLastAddedIndex() {
