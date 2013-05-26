@@ -9,7 +9,6 @@ import common.ThreadUncaughtExceptionHandler;
 import common.protocol.*;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Timer;
@@ -60,8 +59,7 @@ public class Server {
         //a protocol to process incoming messages
         //instantiate a new connection handler
         protocol = new Protocol();
-        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
-        protocol.setExceptionHandler(exceptionHandler);
+        
         conn = new ConnectionHandler(protocol.getCurrentHost(), protocol.getServerPort(), true);
         conn.addObserver(protocol);
 
@@ -75,7 +73,13 @@ public class Server {
         }, 1 * 30 * 1000, 1 * 30 * 1000);
 
         //a thread to listen for incoming messages
-        new Thread(conn).start();
+        ThreadUncaughtExceptionHandler exceptionHandler = new ThreadUncaughtExceptionHandler();
+        Thread thread = new Thread(conn);
+        thread.setName("startServer");
+        thread.setUncaughtExceptionHandler(exceptionHandler);
+        thread.start();
+        
+        
     }
 
     private static void updateUsers() {
@@ -144,4 +148,9 @@ public class Server {
         Collections.sort(resultList);
         return resultList;
     }
+
+    public static ConnectionHandler getConn() {
+        return conn;
+    }
+    
 }
