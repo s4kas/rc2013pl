@@ -20,6 +20,8 @@ public class ClientActionListener extends MouseAdapter implements ActionListener
 		if (e.getSource().equals(mainFrame.getSignInButton())) {
 			String username = mainFrame.getSignInUser().getText();
 			Client.signIn(username);
+		} else if (e.getSource().equals(mainFrame.getLogOutButton())) {
+			Client.logOut();
 		}
 	}
 

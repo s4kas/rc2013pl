@@ -56,7 +56,9 @@ public class ClientMainFrame extends JFrame implements Observer {
 		
 		setTitle(UIConstants.CLIENT_MAIN_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainPanel = new JPanel();
 		loadSignInPanel();
+		add(mainPanel);
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -72,6 +74,10 @@ public class ClientMainFrame extends JFrame implements Observer {
 	
 	public JList<String> getUserJList() {
 		return userList;
+	}
+	
+	public JButton getLogOutButton() {
+		return logOutButton;
 	}
 	
 	@Override
@@ -107,7 +113,6 @@ public class ClientMainFrame extends JFrame implements Observer {
 	
 	private void loadSignInPanel() {	
 		//main panel
-		mainPanel = new JPanel();
 		mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		mainPanel.setPreferredSize(new Dimension(MAINPANEL_WIDTH, MAINPANEL_HEIGHT));
@@ -132,8 +137,6 @@ public class ClientMainFrame extends JFrame implements Observer {
 		signInButton.addActionListener(clientActionListener);
 		mainPanel.add(signInButton);
 		mainPanel.add(Box.createVerticalGlue());
-
-		add(mainPanel);
 	}
 	
 	private void loadUserListPanel(String userName) {
@@ -160,6 +163,7 @@ public class ClientMainFrame extends JFrame implements Observer {
 		
 		logOutButton = new JButton("Log Out");
 		logOutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		logOutButton.addActionListener(clientActionListener);
 		mainPanel.add(logOutButton);
 		mainPanel.add(Box.createVerticalStrut(10));
 	}
@@ -191,9 +195,10 @@ public class ClientMainFrame extends JFrame implements Observer {
 				mainPanel.repaint();
 				break;
 			case SIGNEDOUT:
-				signInUser.setEnabled(true);
-				signInButton.setEnabled(true);
-				signInLabel.setText(UIConstants.SIGN_IN_LABEL);
+				mainPanel.removeAll();
+				loadSignInPanel();
+				mainPanel.validate();
+				mainPanel.repaint();
 				break;
 		}
 	}
