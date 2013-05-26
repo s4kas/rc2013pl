@@ -71,6 +71,17 @@ public class Client {
 
         mainFrame.toFront();
     }
+    
+    private static void startRegisterTimer() {
+    	sendRegisterTimer = new Timer();
+        sendRegisterTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                //send a register to the server
+                sendRegister();
+            }
+        }, 0, 1 * 10 * 1000);
+    }
 
     public static void signIn(String username) {
         //update the Model
@@ -86,19 +97,15 @@ public class Client {
                 if (clientModel.isSigningIn()) {
                     clientModel.setErrorMsg(UIConstants.CLIENT_FAILED_CONNECT);
                     clientModel.setSignedOut();
+                } else if (clientModel.isSignedIn()) {
+                	// send a register every 1 min to update user list
+                	startRegisterTimer();
                 }
             }
         }, CLIENT_SERVER_TIMEOUT);
         
-        // send a register every 1 min to update user list
-        sendRegisterTimer = new Timer();
-        sendRegisterTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                //send a register to the server
-                sendRegister();
-            }
-        }, 0, 1 * 10 * 1000);
+        //try to register with server
+        sendRegister();
     }
     
     public static void logOut() {
