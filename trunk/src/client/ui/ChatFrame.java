@@ -18,7 +18,6 @@ import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
-
 import common.io.FileUtils;
 import common.ui.UIConstants;
 

@@ -28,9 +28,10 @@ public class Client {
     private static final int CLIENT_SERVER_TIMEOUT = 10000; //10 sec.
     private static Map<String, ChatModel> listOfOpenChatModels;
     private static ClientModel clientModel;
+    private static ClientMainFrame mainFrame;
     private static IProtocol protocol;
     private static ConnectionHandler conn;
-    private static Timer sendRegisterTimer;
+    private static Timer sendRegisterTimer, signInTimeout;
 
     public static void main(String[] args) {
     	prepareClient();
@@ -39,6 +40,8 @@ public class Client {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowUI();
+                //register the mainFrame as observer
+                clientModel.addObserver(mainFrame);
             }
         });
 
@@ -59,10 +62,7 @@ public class Client {
 
     private static void createAndShowUI() {
         //Create and set up the Main window.
-        ClientMainFrame mainFrame = new ClientMainFrame();
-
-        //register the mainFrame as observer
-        clientModel.addObserver(mainFrame);
+        mainFrame = new ClientMainFrame();
 
         //Create and set up the Debug window.
         //DebugFrame debugFrame = new DebugFrame(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY());
@@ -77,7 +77,8 @@ public class Client {
         clientModel.setSigningIn();
 
         //Timeout if sign in unsuccessful
-        new Timer().schedule(new TimerTask() {
+        signInTimeout = new Timer();
+        signInTimeout.schedule(new TimerTask() {
             @Override
             public void run() {
                 if (clientModel.isSigningIn()) {
@@ -102,12 +103,16 @@ public class Client {
     	//stop
     	sendRegisterTimer.cancel();
     	sendRegisterTimer.purge();
+    	signInTimeout.cancel();
+    	signInTimeout.purge();
     	conn.stopServer();
     	//update model
     	clientModel.setSignedOut();
     	
     	//start
     	prepareClient();
+    	//register the mainFrame as observer
+        clientModel.addObserver(mainFrame);
     	startConnection();
     }
     

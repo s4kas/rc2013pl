@@ -10,6 +10,8 @@ public class UIConstants {
 	public static final String CLIENT_FAILED_CONNECT = "Ups! Server Offline?";
 	public static final String CHAT_SEND_FOTO = "<html>Send<br>Foto</html>";
 	public static final String CHAT_SEND_TEXT = "<html>Send<br>Text</html>";
+	public static final String USERS_IN = "Users signing In";
+	public static final String USERS_OUT = "Users signing Out";
 	
 	public static final String DEBUG_TITLE = "Debug Console";
 	public static final String DEBUG_START = "Debuging started";
